@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"runtime"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/rajveermalviya/go-webgpu/wgpu"
@@ -9,6 +10,10 @@ import (
 
 	_ "embed"
 )
+
+func init() {
+	runtime.LockOSThread()
+}
 
 type State struct {
 	win       *glfw.Window
@@ -108,8 +113,8 @@ func main() {
 
 	mon_width, mon_height := glfw.GetPrimaryMonitor().GetContentScale()
 
-	if mon_width != 1 || mon_height != 1 {
-		panic("Monitor scaling is not 1:1, things might explode, aborting now")
+	if runtime.GOOS != "darwin" && (mon_width != 1 || mon_height != 1) {
+		panic("Monitor scaling is not 1:1 and not on macOS, things might explode, aborting now")
 	}
 
 	glfw.WindowHint(glfw.ClientAPI, glfw.NoAPI) // tell GLFW not to create an OpenGL context automatically
