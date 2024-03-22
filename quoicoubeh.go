@@ -17,9 +17,36 @@ type State struct {
 	adapter   *wgpu.Adapter
 	device    *wgpu.Device
 	queue     *wgpu.Queue
+	config    *wgpu.SwapChainDescriptor
 	swapchain *wgpu.SwapChain
 	shader    *wgpu.ShaderModule
 	pipeline  *wgpu.RenderPipeline
+}
+
+func (state *State) resize(width, height int) {
+	if width <= 0 || height <= 0 {
+		return
+	}
+
+	state.config.Width = uint32(width)
+	state.config.Height = uint32(height)
+
+	log.Printf("Window resized to %dx%d, recreate swapchain\n", width, height)
+
+	swapchain, err := state.device.CreateSwapChain(state.surface, state.config)
+	if err != nil {
+		log.Fatal(err)
+		return
+	}
+
+	if swapchain != nil {
+		if state.swapchain != nil {
+			state.swapchain.Release()
+		}
+		state.swapchain = swapchain
+	} else {
+		log.Fatal("Failed to recreate swapchain")
+	}
 }
 
 func (state *State) render() {
@@ -79,7 +106,14 @@ func main() {
 	}
 	defer glfw.Terminate()
 
+	mon_width, mon_height := glfw.GetPrimaryMonitor().GetContentScale()
+
+	if mon_width != 1 || mon_height != 1 {
+		panic("Monitor scaling is not 1:1, things might explode, aborting now")
+	}
+
 	glfw.WindowHint(glfw.ClientAPI, glfw.NoAPI) // tell GLFW not to create an OpenGL context automatically
+	// TODO once this is added to go-gl/glfw, unset GLFW_SCALE_FRAMEBUFFER
 
 	var err error
 
@@ -125,7 +159,7 @@ func main() {
 	caps := state.surface.GetCapabilities(state.adapter)
 	width, height := state.win.GetSize()
 
-	config := &wgpu.SwapChainDescriptor{
+	state.config = &wgpu.SwapChainDescriptor{
 		Usage:       wgpu.TextureUsage_RenderAttachment,
 		Format:      caps.Formats[0],
 		Width:       uint32(width),
@@ -134,7 +168,7 @@ func main() {
 		AlphaMode:   caps.AlphaModes[0],
 	}
 
-	if state.swapchain, err = state.device.CreateSwapChain(state.surface, config); err != nil {
+	if state.swapchain, err = state.device.CreateSwapChain(state.surface, state.config); err != nil {
 		panic(err)
 	}
 	defer state.swapchain.Release()
@@ -170,7 +204,7 @@ func main() {
 			EntryPoint: "frag_main",
 			Targets: []wgpu.ColorTargetState{
 				{
-					Format:    config.Format,
+					Format:    state.config.Format,
 					Blend:     &wgpu.BlendState_Replace,
 					WriteMask: wgpu.ColorWriteMask_All,
 				},
@@ -186,23 +220,9 @@ func main() {
 	}
 	defer state.pipeline.Release()
 
-	/*
-		state.win.SetSizeCallback(func(_ *glfw.Window, width, height int) {
-			if width <= 0 || height <= 0 {
-				return
-			}
-
-			config.Width = uint32(width)
-			config.Height = uint32(height)
-
-			log.Println("Window resized to %dx%d, recreate swapchain", width, height)
-
-			state.swapchain.Release()
-			if state.swapchain, err = state.device.CreateSwapChain(state.surface, config); err != nil {
-				panic(err)
-			}
-		})
-	*/
+	state.win.SetSizeCallback(func(_ *glfw.Window, width, height int) {
+		state.resize(width, height)
+	})
 
 	log.Println("Start main loop")
 
