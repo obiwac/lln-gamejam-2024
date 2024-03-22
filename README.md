@@ -45,8 +45,7 @@ It also needs to be modified to support FreeBSD in `wgpuext/glfw`, by creating a
 ```go
 // go:build freebsd && wayland
 
-package wgpuext_glfw // import "github.com/rajveermalviya/go-webgpu/wgpuext/gl
-fw"
+package wgpuext_glfw // import "github.com/rajveermalviya/go-webgpu/wgpuext/glfw"
 
 import "C"
 
@@ -77,6 +76,12 @@ Finally, you need to add the following linker flags in `~/go/pkg/mod/github.com/
 ```
 
 These are all things I'll hopefully fix in a bit :)
+
+If you want to install the Vulkan validation layer (`VK_LAYER_KHRONOS_validation`):
+
+```console
+pkg install vulkan-validation-layers
+```
 
 ### Extra notes for aquaBSD
 
