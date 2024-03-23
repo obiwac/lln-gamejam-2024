@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"runtime"
+	"unsafe"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/rajveermalviya/go-webgpu/wgpu"
@@ -27,9 +28,11 @@ type State struct {
 	shader            *wgpu.ShaderModule
 	bind_group_layout *wgpu.BindGroupLayout
 	bind_group        *wgpu.BindGroup
+	vbo_layout        wgpu.VertexBufferLayout
 	pipeline_layout   *wgpu.PipelineLayout
 	pipeline          *wgpu.RenderPipeline
 	texture           *Texture
+	model				 *Model
 	player            *Player
 	delta_time        float64
 }
@@ -95,7 +98,6 @@ func (state *State) render() {
 
 	render_pass.SetPipeline(state.pipeline)
 	render_pass.SetBindGroup(0, state.bind_group, nil)
-	render_pass.Draw(3, 1, 0, 0)
 	render_pass.End()
 
 	cmd_buf, err := encoder.Finish(nil)
@@ -112,8 +114,11 @@ func (state *State) render() {
 //go:embed shader.wgsl
 var shader_src string
 
-//go:embed res/obama.png
-var obama_png []byte
+//go:embed res/alexis-room-lightmap.png
+var alexis_room_lightmap []byte
+
+//go:embed res/alexis-room.obj
+var alexis_room string
 
 func main() {
 	state := State{}
@@ -238,6 +243,25 @@ func main() {
 	}
 	defer state.bind_group_layout.Release()
 
+	log.Println("Create WebGPU VBO layout")
+
+	state.vbo_layout = wgpu.VertexBufferLayout{
+		ArrayStride: uint64(unsafe.Sizeof(Vertex{})),
+		StepMode: wgpu.VertexStepMode_Vertex,
+		Attributes: []wgpu.VertexAttribute{
+			{
+				Format: wgpu.VertexFormat_Float32x3,
+				Offset: 0,
+				ShaderLocation: 0,
+			},
+			{
+				Format: wgpu.VertexFormat_Float32x2,
+				Offset: 4 * 3,
+				ShaderLocation: 1,
+			},
+		},
+	}
+
 	log.Println("Create WebGPU pipeline layout")
 
 	if state.pipeline_layout, err = state.device.CreatePipelineLayout(&wgpu.PipelineLayoutDescriptor{
@@ -288,10 +312,17 @@ func main() {
 
 	log.Println("Load texture")
 
-	if state.texture, err = NewTextureFromPath(&state, "Obama", obama_png); err != nil {
+	if state.texture, err = NewTextureFromPath(&state, "Alexis room lightmap", alexis_room_lightmap); err != nil {
 		panic(err)
 	}
 	defer state.texture.Release()
+
+	log.Println("Load model")
+
+	if state.model, err = NewModelFromObj(&state, "Alexis room", alexis_room); err != nil {
+		panic(err)
+	}
+	defer state.model.Release()
 
 	log.Println("Create player")
 
