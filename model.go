@@ -2,9 +2,23 @@ package main
 
 import (
 	"fmt"
+	"unsafe"
 
 	"github.com/rajveermalviya/go-webgpu/wgpu"
 )
+
+type IvxHeader struct {
+	version_major uint64
+	version_minor uint64
+	name [1024]byte
+
+	index_count uint64
+	index_offset uint64
+
+	vertex_count uint64
+	components uint64
+	offset uint64
+}
 
 type Vertex struct {
 	pos [3]float32
@@ -17,7 +31,7 @@ type Model struct {
 	index_count uint32
 }
 
-func NewModel(state *State, label string, vertices []float32, indices []uint32) (*Model, error) {
+func NewModel(state *State, label string, vertices []Vertex, indices []uint32) (*Model, error) {
 	model := Model{}
 
 	var err error
@@ -44,11 +58,22 @@ func NewModel(state *State, label string, vertices []float32, indices []uint32) 
 	return &model, nil
 }
 
-func NewModelFromObj(state *State, label, obj string) (*Model, error) {
-	// TODO parse obj here
+func NewModelFromIvx(state *State, label string, ivx []byte) (*Model, error) {
+	header := (*IvxHeader)(unsafe.Pointer(&ivx[0]))
 
-	vertices := []float32{}
-	indices := []uint32{}
+	var vertices []Vertex
+
+	for i := uint64(0); i < header.vertex_count; i++ {
+		vertex := (*Vertex)(unsafe.Pointer(&ivx[header.offset + i * uint64(unsafe.Sizeof(vertices))]))
+		vertices = append(vertices, *vertex)
+	}
+
+	var indices []uint32
+
+	for i := uint64(0); i < header.index_count; i++ {
+		index := (*uint32)(unsafe.Pointer(&ivx[header.index_offset + i * uint64(unsafe.Sizeof(indices))]))
+		indices = append(indices, *index)
+	}
 
 	return NewModel(state, label, vertices, indices)
 }

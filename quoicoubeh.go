@@ -117,8 +117,8 @@ var shader_src string
 //go:embed res/alexis-room-lightmap.png
 var alexis_room_lightmap []byte
 
-//go:embed res/alexis-room.obj
-var alexis_room string
+//go:embed res/alexis-room.ivx
+var alexis_room []byte
 
 func main() {
 	state := State{}
@@ -319,7 +319,7 @@ func main() {
 
 	log.Println("Load model")
 
-	if state.model, err = NewModelFromObj(&state, "Alexis room", alexis_room); err != nil {
+	if state.model, err = NewModelFromIvx(&state, "Alexis room", alexis_room); err != nil {
 		panic(err)
 	}
 	defer state.model.Release()

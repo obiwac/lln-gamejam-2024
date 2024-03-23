@@ -1,1 +1,5 @@
 quoicoubeh
+*.obj
+*.core
+*.DS_Store
+.vscode
