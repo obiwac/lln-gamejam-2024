@@ -1,5 +1,4 @@
 package main
-
 import (
 	"log"
 	"runtime"
@@ -179,11 +178,18 @@ func main() {
 	log.Println("Request WebGPU adapter")
 
 	if state.adapter, err = state.instance.RequestAdapter(&wgpu.RequestAdapterOptions{
+		ForceFallbackAdapter: false,
+		BackendType: wgpu.BackendType_OpenGL,
 		CompatibleSurface: state.surface,
 	}); err != nil {
 		panic(err)
 	}
 	defer state.adapter.Release()
+
+	log.Println("Adapter name:\t", state.adapter.GetProperties().Name)
+	log.Println("Adapter vendor:\t", state.adapter.GetProperties().VendorName)
+	log.Println("Adapter driver:\t", state.adapter.GetProperties().DriverDescription)
+	log.Println("Adapter architecture:\t", state.adapter.GetProperties().Architecture)
 
 	log.Println("Request WebGPU device")
 

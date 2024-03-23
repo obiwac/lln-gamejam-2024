@@ -54,7 +54,7 @@ func (mat *Mat) Scale(x, y, z float32) *Mat {
 		{x, 0, 0, 0},
 		{0, y, 0, 0},
 		{0, 0, z, 0},
-		{x, y, z, 1},
+		{0, 0, 0, 1},
 	}
 
 	return mat
@@ -120,11 +120,13 @@ func (mat *Mat) Frustum(left, right, bottom, top, near, far float32) *Mat {
 	mat.Data[2][3] = -1
 	mat.Data[3][2] = -2 * near * far / dz
 
+	mat.Data[3][3] = 0
+
 	return mat
 }
 
 func (mat *Mat) Perspective(fov_y, aspect, near, far float32) *Mat {
-	frustum_y := float32(math.Tan(float64(fov_y/2))) * near
+	frustum_y := float32(math.Tan(float64(fov_y/2)))
 	frustum_x := frustum_y * aspect
 
 	return mat.Frustum(-frustum_x*near, frustum_x*near, -frustum_y*near, frustum_y*near, near, far)

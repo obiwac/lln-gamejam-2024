@@ -78,7 +78,15 @@ func NewTextureFromBytes(state *State, label string, buf []byte) (*Texture, erro
 		return nil, err
 	}
 
-	if texture.sampler, err = state.device.CreateSampler(nil); err != nil {
+	if texture.sampler, err = state.device.CreateSampler(&wgpu.SamplerDescriptor{
+		AddressModeU:   wgpu.AddressMode_ClampToEdge,
+		AddressModeV:   wgpu.AddressMode_ClampToEdge,
+		AddressModeW:   wgpu.AddressMode_ClampToEdge,
+		MagFilter:      wgpu.FilterMode_Linear,
+		MinFilter:      wgpu.FilterMode_Linear,
+		MipmapFilter:   wgpu.MipmapFilterMode_Linear,
+		MaxAnisotrophy: 1,
+	}); err != nil {
 		texture.texture.Release()
 		texture.View.Release()
 		return nil, err
