@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"math"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -46,43 +47,53 @@ func NewPlayer(state *State) (*Player, error) {
 
 func (player *Player) HandleInputs() {
 	speed := float32(0.05)
-	multiplier := speed * float32(player.state.delta_time)
+	multiplier := speed
 
 	// Camera movement
 
+	input := []float32{0, 0}
+
 	if player.state.win.GetKey(glfw.KeyW) == glfw.Press || player.state.win.GetKey(glfw.KeyUp) == glfw.Press {
-		player.position[2] += multiplier
+		input[1] = -1
 	}
 
 	if player.state.win.GetKey(glfw.KeyS) == glfw.Press || player.state.win.GetKey(glfw.KeyDown) == glfw.Press {
-		player.position[2] -= multiplier
+		input[1] = 1
 	}
 
 	if player.state.win.GetKey(glfw.KeyA) == glfw.Press || player.state.win.GetKey(glfw.KeyLeft) == glfw.Press {
-		player.position[0] -= multiplier
+		input[0] = -1
 	}
 
 	if player.state.win.GetKey(glfw.KeyD) == glfw.Press || player.state.win.GetKey(glfw.KeyRight) == glfw.Press {
-		player.position[0] += multiplier
+		input[0] = 1
 	}
 
-	if player.position[2] != 0 || player.position[0] != 0 {
-		angle := player.rotation[0] - math.Pi/2 + float32(math.Atan2(float64(player.position[2]), float64(player.position[0])))
-		player.position[0] = float32(math.Cos(float64(angle))) * multiplier
+	if input[1] != 0 || input[0] != 0 {
+		angle := player.rotation[0] - math.Pi/2 + float32(math.Atan2(float64(input[1]), float64(input[0])))
+		player.position[0] += float32(math.Cos(float64(angle))) * multiplier
+		player.position[2] += float32(math.Sin(float64(angle))) * multiplier
 	}
+
+	log.Println(player.position)
 }
 
 func (player *Player) HandleMouse() {
-	sensitivity := 0.01
+	sensitivity := 0.4
 
 	// Camera rotation
 	x, y := player.state.win.GetCursorPos()
 	width, height := player.state.win.GetSize()
 
-	player.rotation[0] -= float32((x-float64(width)/2)/float64(width)) * float32(sensitivity)
+	player.rotation[0] += float32((x-float64(width)/2)/float64(width)) * float32(sensitivity)
 	player.rotation[1] += float32((y-float64(height)/2)/float64(height)) * float32(sensitivity)
 
 	player.rotation[1] = float32(math.Max(-math.Pi/2, math.Min(math.Pi/2, float64(player.rotation[1]))))
+
+	log.Println(player.rotation)
+
+	// Lock cursor in the center of the window
+	player.state.win.SetCursorPos(float64(width)/2, float64(height)/2)
 
 	// Hide cursor
 	player.state.win.SetInputMode(glfw.CursorMode, glfw.CursorDisabled)
@@ -95,12 +106,14 @@ func (player *Player) Release() {
 func (player *Player) mvp() *Mat {
 	width, height := player.state.win.GetSize()
 
-	player.p.Perspective(math.Pi/6, float32(width)/float32(height), 0.1, 500)
+	player.p.Perspective(math.Pi/1.5, float32(width)/float32(height), 0.1, 500)
 	player.m.Translation(0, 0, 0)
-	player.v.Translation(-player.position[0], -player.position[1], player.position[2])
-	player.v.Multiply(NewMat().Rotate2d(-(player.rotation[0] - math.Pi/2), player.rotation[1]))
+	player.v.Identity()
+	//player.v.Multiply(NewMat().Rotate2d(-(player.rotation[0] - math.Pi/2), player.rotation[1]))
+	player.v.Multiply(NewMat().Rotate((player.rotation[0] - math.Pi/2), 0, 1, 0))
+	player.v.Multiply(NewMat().Translation(-player.position[0], -player.position[1], -player.position[2]))
 
-	mvp := NewMat().Multiply(player.m).Multiply(player.v).Multiply(player.p)
+	mvp := NewMat().Multiply(player.p).Multiply(player.v).Multiply(player.m)
 	return mvp
 }
 
