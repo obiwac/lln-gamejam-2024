@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"unsafe"
 
 	"github.com/rajveermalviya/go-webgpu/wgpu"
@@ -80,8 +79,6 @@ func NewModelFromIvx(state *State, label string, ivx []byte) (*Model, error) {
 }
 
 func (model *Model) Draw(render_pass *wgpu.RenderPassEncoder) {
-	log.Println("Draw model", model.index_count)
-
 	render_pass.SetVertexBuffer(0, model.vbo, 0, wgpu.WholeSize)
 	render_pass.SetIndexBuffer(model.ibo, wgpu.IndexFormat_Uint32, 0, wgpu.WholeSize)
 	render_pass.DrawIndexed(model.index_count, 1, 0, 0, 0)
