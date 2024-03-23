@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"math"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
@@ -74,8 +73,6 @@ func (player *Player) HandleInputs() {
 		player.position[0] += float32(math.Cos(float64(angle))) * multiplier
 		player.position[2] += float32(math.Sin(float64(angle))) * multiplier
 	}
-
-	log.Println(player.position)
 }
 
 func (player *Player) HandleMouse() {
@@ -89,8 +86,6 @@ func (player *Player) HandleMouse() {
 	player.rotation[1] -= float32((y-float64(height)/2)/float64(height)) * float32(sensitivity)
 
 	player.rotation[1] = float32(math.Max(-math.Pi/2, math.Min(math.Pi/2, float64(player.rotation[1]))))
-
-	log.Println(player.rotation)
 
 	// Lock cursor in the center of the window
 	player.state.win.SetCursorPos(float64(width)/2, float64(height)/2)

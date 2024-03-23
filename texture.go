@@ -13,11 +13,11 @@ import (
 
 type Texture struct {
 	texture *wgpu.Texture
-	view    *wgpu.TextureView
+	View    *wgpu.TextureView
 	sampler *wgpu.Sampler
 }
 
-func NewTextureFromPath(state *State, label string, buf []byte) (*Texture, error) {
+func NewTextureFromBytes(state *State, label string, buf []byte) (*Texture, error) {
 	img, err := png.Decode(bytes.NewReader(buf))
 	if err != nil {
 		return nil, err
@@ -73,14 +73,65 @@ func NewTextureFromPath(state *State, label string, buf []byte) (*Texture, error
 		return nil, err
 	}
 
-	if texture.view, err = texture.texture.CreateView(nil); err != nil {
+	if texture.View, err = texture.texture.CreateView(nil); err != nil {
 		texture.texture.Release()
 		return nil, err
 	}
 
 	if texture.sampler, err = state.device.CreateSampler(nil); err != nil {
 		texture.texture.Release()
-		texture.view.Release()
+		texture.View.Release()
+		return nil, err
+	}
+
+	return texture, nil
+}
+
+const DEPTH_FORMAT = wgpu.TextureFormat_Depth32Float
+
+func NewDepthTexture(state *State) (*Texture, error) {
+	width, height := state.win.GetSize()
+
+	size := wgpu.Extent3D{
+		Width:              uint32(width),
+		Height:             uint32(height),
+		DepthOrArrayLayers: 1,
+	}
+
+	texture := &Texture{}
+	var err error
+
+	if texture.texture, err = state.device.CreateTexture(&wgpu.TextureDescriptor{
+		Label:         "Depth",
+		Size:          size,
+		MipLevelCount: 1,
+		SampleCount:   1,
+		Dimension:     wgpu.TextureDimension_2D,
+		Format:        DEPTH_FORMAT,
+		Usage:         wgpu.TextureUsage_RenderAttachment | wgpu.TextureUsage_TextureBinding,
+	}); err != nil {
+		return nil, err
+	}
+
+	if texture.View, err = texture.texture.CreateView(nil); err != nil {
+		texture.texture.Release()
+		return nil, err
+	}
+
+	if texture.sampler, err = state.device.CreateSampler(&wgpu.SamplerDescriptor{
+		AddressModeU:   wgpu.AddressMode_ClampToEdge,
+		AddressModeV:   wgpu.AddressMode_ClampToEdge,
+		AddressModeW:   wgpu.AddressMode_ClampToEdge,
+		MagFilter:      wgpu.FilterMode_Nearest,
+		MinFilter:      wgpu.FilterMode_Nearest,
+		MipmapFilter:   wgpu.MipmapFilterMode_Nearest,
+		Compare:        wgpu.CompareFunction_Less,
+		MaxAnisotrophy: 1,
+		LodMinClamp:    0,
+		LodMaxClamp:    100,
+	}); err != nil {
+		texture.texture.Release()
+		texture.View.Release()
 		return nil, err
 	}
 
@@ -181,6 +232,6 @@ func NewTextureFromImage(state *State, label string, img image.Image) (*Texture,
 
 func (texture *Texture) Release() {
 	texture.texture.Release()
-	texture.view.Release()
+	texture.View.Release()
 	texture.sampler.Release()
 }

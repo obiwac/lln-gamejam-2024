@@ -29,6 +29,7 @@ type State struct {
 	bind_group_layout *wgpu.BindGroupLayout
 	bind_group        *wgpu.BindGroup
 	vbo_layout        wgpu.VertexBufferLayout
+	depth_texture     *Texture
 	pipeline_layout   *wgpu.PipelineLayout
 	pipeline          *wgpu.RenderPipeline
 	texture           *Texture
@@ -45,7 +46,7 @@ func (state *State) resize(width, height int) {
 	state.config.Width = uint32(width)
 	state.config.Height = uint32(height)
 
-	log.Printf("Window resized to %dx%d, recreate swapchain\n", width, height)
+	log.Printf("Window resized to %dx%d, recreate swapchain and depth texture\n", width, height)
 
 	swapchain, err := state.device.CreateSwapChain(state.surface, state.config)
 	if err != nil {
@@ -60,6 +61,12 @@ func (state *State) resize(width, height int) {
 		state.swapchain = swapchain
 	} else {
 		log.Fatal("Failed to recreate swapchain")
+	}
+
+	state.depth_texture.Release()
+	if state.depth_texture, err = NewDepthTexture(state); err != nil {
+		log.Fatal(err)
+		return
 	}
 }
 
@@ -92,6 +99,17 @@ func (state *State) render() {
 				StoreOp:    wgpu.StoreOp_Store,
 				ClearValue: wgpu.Color{R: 1, G: 0, B: 0, A: 1},
 			},
+		},
+		DepthStencilAttachment: &wgpu.RenderPassDepthStencilAttachment{
+			View:              state.depth_texture.View,
+			DepthClearValue:   1,
+			DepthLoadOp:       wgpu.LoadOp_Clear,
+			DepthStoreOp:      wgpu.StoreOp_Store,
+			DepthReadOnly:     false,
+			StencilClearValue: 0,
+			StencilLoadOp:     wgpu.LoadOp_Load,
+			StencilStoreOp:    wgpu.StoreOp_Store,
+			StencilReadOnly:   true,
 		},
 	})
 	defer render_pass.Release()
@@ -263,6 +281,13 @@ func main() {
 		},
 	}
 
+	log.Println("Create depth texture")
+
+	if state.depth_texture, err = NewDepthTexture(&state); err != nil {
+		panic(err)
+	}
+	defer state.depth_texture.Release()
+
 	log.Println("Create WebGPU pipeline layout")
 
 	if state.pipeline_layout, err = state.device.CreatePipelineLayout(&wgpu.PipelineLayoutDescriptor{
@@ -304,6 +329,17 @@ func main() {
 				},
 			},
 		},
+		DepthStencil: &wgpu.DepthStencilState{
+			Format:            DEPTH_FORMAT,
+			DepthWriteEnabled: true,
+			DepthCompare:      wgpu.CompareFunction_Less,
+			StencilFront: wgpu.StencilFaceState{
+				Compare: wgpu.CompareFunction_Always,
+			},
+			StencilBack: wgpu.StencilFaceState{
+				Compare: wgpu.CompareFunction_Always,
+			},
+		},
 		Multisample: wgpu.MultisampleState{
 			Count:                  1,
 			Mask:                   0xFFFFFFFF,
@@ -316,7 +352,7 @@ func main() {
 
 	log.Println("Load texture")
 
-	if state.texture, err = NewTextureFromPath(&state, "Alexis room lightmap", alexis_room_lightmap); err != nil {
+	if state.texture, err = NewTextureFromBytes(&state, "Alexis room lightmap", alexis_room_lightmap); err != nil {
 		panic(err)
 	}
 	defer state.texture.Release()
@@ -350,7 +386,7 @@ func main() {
 		Entries: []wgpu.BindGroupEntry{
 			{ // texture
 				Binding:     0,
-				TextureView: state.texture.view,
+				TextureView: state.texture.View,
 			},
 			{ // sampler
 				Binding: 1,
