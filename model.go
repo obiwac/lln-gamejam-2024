@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"unsafe"
 
 	"github.com/rajveermalviya/go-webgpu/wgpu"
@@ -10,24 +11,24 @@ import (
 type IvxHeader struct {
 	version_major uint64
 	version_minor uint64
-	name [1024]byte
+	name          [1024]byte
 
-	index_count uint64
+	index_count  uint64
 	index_offset uint64
 
 	vertex_count uint64
-	components uint64
-	offset uint64
+	components   uint64
+	offset       uint64
 }
 
 type Vertex struct {
 	pos [3]float32
-	uv [2]float32
+	uv  [2]float32
 }
 
 type Model struct {
-	vbo *wgpu.Buffer
-	ibo *wgpu.Buffer
+	vbo         *wgpu.Buffer
+	ibo         *wgpu.Buffer
 	index_count uint32
 }
 
@@ -37,17 +38,17 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32) (
 	var err error
 
 	if model.vbo, err = state.device.CreateBufferInit(&wgpu.BufferInitDescriptor{
-		Label: fmt.Sprintf("VBO (%s)", label),
+		Label:    fmt.Sprintf("VBO (%s)", label),
 		Contents: wgpu.ToBytes(vertices[:]),
-		Usage: wgpu.BufferUsage_Vertex,
+		Usage:    wgpu.BufferUsage_Vertex,
 	}); err != nil {
 		return nil, err
 	}
 
 	if model.ibo, err = state.device.CreateBufferInit(&wgpu.BufferInitDescriptor{
-		Label: fmt.Sprintf("IBO (%s)", label),
+		Label:    fmt.Sprintf("IBO (%s)", label),
 		Contents: wgpu.ToBytes(indices[:]),
-		Usage: wgpu.BufferUsage_Index,
+		Usage:    wgpu.BufferUsage_Index,
 	}); err != nil {
 		model.vbo.Release()
 		return nil, err
@@ -61,24 +62,26 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32) (
 func NewModelFromIvx(state *State, label string, ivx []byte) (*Model, error) {
 	header := (*IvxHeader)(unsafe.Pointer(&ivx[0]))
 
-	var vertices []Vertex
-
-	for i := uint64(0); i < header.vertex_count; i++ {
-		vertex := (*Vertex)(unsafe.Pointer(&ivx[header.offset + i * uint64(unsafe.Sizeof(vertices))]))
-		vertices = append(vertices, *vertex)
-	}
-
 	var indices []uint32
 
 	for i := uint64(0); i < header.index_count; i++ {
-		index := (*uint32)(unsafe.Pointer(&ivx[header.index_offset + i * uint64(unsafe.Sizeof(indices))]))
+		index := (*uint32)(unsafe.Pointer(&ivx[header.index_offset+i*uint64(unsafe.Sizeof(indices[0]))]))
 		indices = append(indices, *index)
+	}
+
+	var vertices []Vertex
+
+	for i := uint64(0); i < header.vertex_count; i++ {
+		vertex := (*Vertex)(unsafe.Pointer(&ivx[header.offset+i*uint64(unsafe.Sizeof(vertices[0]))]))
+		vertices = append(vertices, *vertex)
 	}
 
 	return NewModel(state, label, vertices, indices)
 }
 
 func (model *Model) Draw(render_pass *wgpu.RenderPassEncoder) {
+	log.Println("Draw model", model.index_count)
+
 	render_pass.SetVertexBuffer(0, model.vbo, 0, wgpu.WholeSize)
 	render_pass.SetIndexBuffer(model.ibo, wgpu.IndexFormat_Uint32, 0, wgpu.WholeSize)
 	render_pass.DrawIndexed(model.index_count, 1, 0, 0, 0)

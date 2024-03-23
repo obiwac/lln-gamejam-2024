@@ -34,7 +34,9 @@ var s: sampler;
 fn frag_main(vert: VertOut) -> FragOut {
 	var out: FragOut;
 
-	out.colour = textureSample(t, s, vert.uv) * vec4(vert.colour, 1.);
+	var tex_colour = textureSample(t, s, vec2f(1.0 - vert.uv.x, 1.0 - vert.uv.y));
+
+	out.colour = vec4f(tex_colour.rgb, 1.0) * vec4(vert.colour, 1.);
 
 	return out;
 }

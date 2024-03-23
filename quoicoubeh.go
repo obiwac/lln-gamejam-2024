@@ -32,7 +32,7 @@ type State struct {
 	pipeline_layout   *wgpu.PipelineLayout
 	pipeline          *wgpu.RenderPipeline
 	texture           *Texture
-	model				 *Model
+	model             *Model
 	player            *Player
 	delta_time        float64
 }
@@ -90,7 +90,7 @@ func (state *State) render() {
 				View:       next_tex,
 				LoadOp:     wgpu.LoadOp_Clear,
 				StoreOp:    wgpu.StoreOp_Store,
-				ClearValue: wgpu.Color{R: 0, G: 0, B: 0, A: 1},
+				ClearValue: wgpu.Color{R: 1, G: 0, B: 0, A: 1},
 			},
 		},
 	})
@@ -98,6 +98,7 @@ func (state *State) render() {
 
 	render_pass.SetPipeline(state.pipeline)
 	render_pass.SetBindGroup(0, state.bind_group, nil)
+	state.model.Draw(render_pass)
 	render_pass.End()
 
 	cmd_buf, err := encoder.Finish(nil)
@@ -247,16 +248,16 @@ func main() {
 
 	state.vbo_layout = wgpu.VertexBufferLayout{
 		ArrayStride: uint64(unsafe.Sizeof(Vertex{})),
-		StepMode: wgpu.VertexStepMode_Vertex,
+		StepMode:    wgpu.VertexStepMode_Vertex,
 		Attributes: []wgpu.VertexAttribute{
 			{
-				Format: wgpu.VertexFormat_Float32x3,
-				Offset: 0,
+				Format:         wgpu.VertexFormat_Float32x3,
+				Offset:         0,
 				ShaderLocation: 0,
 			},
 			{
-				Format: wgpu.VertexFormat_Float32x2,
-				Offset: 4 * 3,
+				Format:         wgpu.VertexFormat_Float32x2,
+				Offset:         4 * 3,
 				ShaderLocation: 1,
 			},
 		},
@@ -288,6 +289,9 @@ func main() {
 		Vertex: wgpu.VertexState{
 			Module:     state.shader,
 			EntryPoint: "vert_main",
+			Buffers: []wgpu.VertexBufferLayout{
+				state.vbo_layout,
+			},
 		},
 		Fragment: &wgpu.FragmentState{
 			Module:     state.shader,

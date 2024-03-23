@@ -38,7 +38,7 @@ func NewPlayer(state *State) (*Player, error) {
 		m: NewMat().Identity(),
 		v: NewMat().Identity(),
 
-		position: [3]float32{0, 0, 30},
+		position: [3]float32{0, 1, 0},
 		rotation: [2]float32{math.Pi / 2, 0},
 
 		MvpBuf: mvp_buf,
@@ -86,7 +86,7 @@ func (player *Player) HandleMouse() {
 	width, height := player.state.win.GetSize()
 
 	player.rotation[0] += float32((x-float64(width)/2)/float64(width)) * float32(sensitivity)
-	player.rotation[1] += float32((y-float64(height)/2)/float64(height)) * float32(sensitivity)
+	player.rotation[1] -= float32((y-float64(height)/2)/float64(height)) * float32(sensitivity)
 
 	player.rotation[1] = float32(math.Max(-math.Pi/2, math.Min(math.Pi/2, float64(player.rotation[1]))))
 
@@ -106,11 +106,11 @@ func (player *Player) Release() {
 func (player *Player) mvp() *Mat {
 	width, height := player.state.win.GetSize()
 
-	player.p.Perspective(math.Pi/1.5, float32(width)/float32(height), 0.1, 500)
+	player.p.Perspective(math.Pi/1.1, float32(width)/float32(height), 0.1, 500)
 	player.m.Translation(0, 0, 0)
 	player.v.Identity()
-	//player.v.Multiply(NewMat().Rotate2d(-(player.rotation[0] - math.Pi/2), player.rotation[1]))
-	player.v.Multiply(NewMat().Rotate((player.rotation[0] - math.Pi/2), 0, 1, 0))
+	player.v.Multiply(NewMat().Rotate2d((player.rotation[0] - math.Pi/2), player.rotation[1]))
+	//player.v.Multiply(NewMat().Rotate((player.rotation[0] - math.Pi/2), 0, 1, 0))
 	player.v.Multiply(NewMat().Translation(-player.position[0], -player.position[1], -player.position[2]))
 
 	mvp := NewMat().Multiply(player.p).Multiply(player.v).Multiply(player.m)
