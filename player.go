@@ -1,6 +1,8 @@
 package main
 
 import (
+	"math"
+
 	"github.com/rajveermalviya/go-webgpu/wgpu"
 )
 
@@ -40,11 +42,13 @@ func (player *Player) Release() {
 }
 
 func (player *Player) mvp() *Mat {
-	player.p.Identity()
-	player.m.Identity().Translation(0, 0, 0)
-	player.v.Identity().Translation(0, 0, 0)
+	width, height := player.state.win.GetSize()
 
-	mvp := NewMat().Multiply(player.p).Multiply(player.v).Multiply(player.m)
+	player.p.Perspective(math.Pi / 6, float32(width) / float32(height), 0.1, 500)
+	player.m.Translation(0, 0, 0)
+	player.v.Translation(0, 0, -5)
+
+	mvp := NewMat().Multiply(player.m).Multiply(player.v).Multiply(player.p)
 	return mvp
 }
 
