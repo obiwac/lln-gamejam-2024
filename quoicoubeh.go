@@ -324,6 +324,14 @@ func main() {
 	}
 	defer state.bind_group.Release()
 
+	log.Println("Create sound system")
+	SoundSystem := NewSoundSystem()
+
+	log.Println("Play music")
+	if err := SoundSystem.PlaySound("res/sound/sos.mp3"); err != nil {
+		panic(err)
+	}
+
 	log.Println("Start main loop")
 
 	state.win.SetSizeCallback(func(_ *glfw.Window, width, height int) {
