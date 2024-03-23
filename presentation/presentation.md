@@ -2,50 +2,24 @@
 marp: true
 ---
 
-# Inversed Portals Game
+# Game-Jam 2024 : Portail inversé
+
+Piwy et Aymeric
 
 ---
 
-## Introduction
-
-Welcome to the world of Inversed Portals! In this game, you'll embark on an exciting adventure through parallel dimensions and inverted realities.
+## Pich du jeu
+Alexis se réveille dans son lit comme chaque matin. Alors qu'il s'apprête à se brosser les dents il se brûle la bouche. Ses co-koteur lui ont encore fait une blague. Ils ont inversé l'arrivée d'eau chaude et d'eau froide. Haha ils sont vraiment trop drôle imaginez un jour ils mettent un sapin dans sa chambre. Bref
 
 ---
 
 ## Gameplay
 
-- Navigate through a series of challenging levels
-- Use portals to teleport between different dimensions
-- Solve puzzles and overcome obstacles
-- Collect power-ups and unlock new abilities
+Alexis doit passer dans des portails menant à différent niveaux pour trouver comment désinverser ses robinets. Dans chaque niveau quelque chose de différent est inversé (couleurs, gravité... autres surprises).
 
 ---
+## C'est tout
 
-## Storyline
+Bonne chance Alexis
 
-In a world where portals have gone awry, you must restore balance by traversing through inverted dimensions. Uncover the secrets of the portals and save the multiverse from chaos!
-
----
-
-## Features
-
-- Stunning visuals and immersive sound effects
-- Unique gameplay mechanics based on portal manipulation
-- Engaging storyline with intriguing plot twists
-- Multiple game modes for endless replayability
-
----
-
-## Conclusion
-
-Get ready for an epic adventure in the world of Inversed Portals! Are you ready to challenge your perception and conquer the multiverse?
-
----
-
-## Thank You!
-
-Follow us on social media for updates and release announcements.
-
-@InversedPortalsGame
-
-#inversedportalsgame
+Quoicoubeh
