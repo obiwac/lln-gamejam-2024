@@ -216,14 +216,14 @@ func NewTextureFromImage(state *State, label string, img image.Image) (*Texture,
 		return nil, err
 	}
 
-	if texture.view, err = texture.texture.CreateView(nil); err != nil {
+	if texture.View, err = texture.texture.CreateView(nil); err != nil {
 		texture.texture.Release()
 		return nil, err
 	}
 
 	if texture.sampler, err = state.device.CreateSampler(nil); err != nil {
 		texture.texture.Release()
-		texture.view.Release()
+		texture.View.Release()
 		return nil, err
 	}
 
