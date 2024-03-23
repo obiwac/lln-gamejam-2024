@@ -27,10 +27,10 @@ func (mat *Mat) Multiply(other *Mat) *Mat {
 
 func (mat *Mat) Identity() *Mat {
 	mat.Data = [4][4]float32{
-		[4]float32{1, 0, 0, 0},
-		[4]float32{0, 1, 0, 0},
-		[4]float32{0, 0, 1, 0},
-		[4]float32{0, 0, 0, 1},
+		{1, 0, 0, 0},
+		{0, 1, 0, 0},
+		{0, 0, 1, 0},
+		{0, 0, 0, 1},
 	}
 
 	return mat
@@ -38,10 +38,10 @@ func (mat *Mat) Identity() *Mat {
 
 func (mat *Mat) Translation(x, y, z float32) *Mat {
 	mat.Data = [4][4]float32{
-		[4]float32{1, 0, 0, 0},
-		[4]float32{0, 1, 0, 0},
-		[4]float32{0, 0, 1, 0},
-		[4]float32{x, y, z, 1},
+		{1, 0, 0, 0},
+		{0, 1, 0, 0},
+		{0, 0, 1, 0},
+		{x, y, z, 1},
 	}
 
 	return mat
@@ -49,10 +49,10 @@ func (mat *Mat) Translation(x, y, z float32) *Mat {
 
 func (mat *Mat) Scale(x, y, z float32) *Mat {
 	mat.Data = [4][4]float32{
-		[4]float32{x, 0, 0, 0},
-		[4]float32{0, y, 0, 0},
-		[4]float32{0, 0, z, 0},
-		[4]float32{0, 0, 0, 1},
+		{x, 0, 0, 0},
+		{0, y, 0, 0},
+		{0, 0, z, 0},
+		{x, y, z, 1},
 	}
 
 	return mat
