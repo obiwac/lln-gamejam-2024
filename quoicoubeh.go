@@ -16,19 +16,21 @@ func init() {
 }
 
 type State struct {
-	win                       *glfw.Window
-	instance                  *wgpu.Instance
-	surface                   *wgpu.Surface
-	adapter                   *wgpu.Adapter
-	device                    *wgpu.Device
-	queue                     *wgpu.Queue
-	config                    *wgpu.SwapChainDescriptor
-	swapchain                 *wgpu.SwapChain
-	shader                    *wgpu.ShaderModule
-	texture_bind_group_layout *wgpu.BindGroupLayout
-	pipeline_layout           *wgpu.PipelineLayout
-	pipeline                  *wgpu.RenderPipeline
-	texture                   *Texture
+	win               *glfw.Window
+	instance          *wgpu.Instance
+	surface           *wgpu.Surface
+	adapter           *wgpu.Adapter
+	device            *wgpu.Device
+	queue             *wgpu.Queue
+	config            *wgpu.SwapChainDescriptor
+	swapchain         *wgpu.SwapChain
+	shader            *wgpu.ShaderModule
+	bind_group_layout *wgpu.BindGroupLayout
+	bind_group        *wgpu.BindGroup
+	pipeline_layout   *wgpu.PipelineLayout
+	pipeline          *wgpu.RenderPipeline
+	texture           *Texture
+	player            *Player
 }
 
 func (state *State) resize(width, height int) {
@@ -55,6 +57,10 @@ func (state *State) resize(width, height int) {
 	} else {
 		log.Fatal("Failed to recreate swapchain")
 	}
+}
+
+func (state *State) update() {
+	state.player.Update()
 }
 
 func (state *State) render() {
@@ -87,7 +93,7 @@ func (state *State) render() {
 	defer render_pass.Release()
 
 	render_pass.SetPipeline(state.pipeline)
-	render_pass.SetBindGroup(0, state.texture.BindGroup, nil)
+	render_pass.SetBindGroup(0, state.bind_group, nil)
 	render_pass.Draw(3, 1, 0, 0)
 	render_pass.End()
 
@@ -197,9 +203,9 @@ func main() {
 	}
 	defer state.shader.Release()
 
-	log.Println("Create WebGPU bind group layout for texture")
+	log.Println("Create WebGPU bind group layout")
 
-	if state.texture_bind_group_layout, err = state.device.CreateBindGroupLayout(&wgpu.BindGroupLayoutDescriptor{
+	if state.bind_group_layout, err = state.device.CreateBindGroupLayout(&wgpu.BindGroupLayoutDescriptor{
 		Label: "Bind group layout",
 		Entries: []wgpu.BindGroupLayoutEntry{
 			{ // texture
@@ -218,18 +224,25 @@ func main() {
 					Type: wgpu.SamplerBindingType_Filtering,
 				},
 			},
+			{ // MVP matrix
+				Binding:    2,
+				Visibility: wgpu.ShaderStage_Vertex,
+				Buffer: wgpu.BufferBindingLayout{
+					Type: wgpu.BufferBindingType_Uniform,
+				},
+			},
 		},
 	}); err != nil {
 		panic(err)
 	}
-	defer state.texture_bind_group_layout.Release()
+	defer state.bind_group_layout.Release()
 
 	log.Println("Create WebGPU pipeline layout")
 
 	if state.pipeline_layout, err = state.device.CreatePipelineLayout(&wgpu.PipelineLayoutDescriptor{
 		Label: "Pipeline layout",
 		BindGroupLayouts: []*wgpu.BindGroupLayout{
-			state.texture_bind_group_layout,
+			state.bind_group_layout,
 		},
 	}); err != nil {
 		panic(err)
@@ -274,10 +287,42 @@ func main() {
 
 	log.Println("Load texture")
 
-	if state.texture, err = NewTextureFromPath(state, "Obama", obama_png); err != nil {
+	if state.texture, err = NewTextureFromPath(&state, "Obama", obama_png); err != nil {
 		panic(err)
 	}
 	defer state.texture.Release()
+
+	log.Println("Create player")
+
+	if state.player, err = NewPlayer(&state); err != nil {
+		panic(err)
+	}
+	defer state.player.Release()
+
+	log.Println("Create WebGPU bind group")
+
+	if state.bind_group, err = state.device.CreateBindGroup(&wgpu.BindGroupDescriptor{
+		Label:  "Bind group",
+		Layout: state.bind_group_layout,
+		Entries: []wgpu.BindGroupEntry{
+			{ // texture
+				Binding:     0,
+				TextureView: state.texture.view,
+			},
+			{ // sampler
+				Binding: 1,
+				Sampler: state.texture.sampler,
+			},
+			{ // MVP matrix
+				Binding: 2,
+				Buffer:  state.player.MvpBuf,
+				Size:    wgpu.WholeSize,
+			},
+		},
+	}); err != nil {
+		panic(err)
+	}
+	defer state.bind_group.Release()
 
 	log.Println("Start main loop")
 
@@ -287,6 +332,7 @@ func main() {
 
 	for !state.win.ShouldClose() {
 		glfw.PollEvents()
+		state.update()
 		state.render()
 	}
 }

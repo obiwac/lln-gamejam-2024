@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"image"
 	"image/draw"
 	"image/png"
@@ -11,13 +10,12 @@ import (
 )
 
 type Texture struct {
-	texture   *wgpu.Texture
-	view      *wgpu.TextureView
-	sampler   *wgpu.Sampler
-	BindGroup *wgpu.BindGroup
+	texture *wgpu.Texture
+	view    *wgpu.TextureView
+	sampler *wgpu.Sampler
 }
 
-func NewTextureFromPath(state State, label string, buf []byte) (*Texture, error) {
+func NewTextureFromPath(state *State, label string, buf []byte) (*Texture, error) {
 	img, err := png.Decode(bytes.NewReader(buf))
 	if err != nil {
 		return nil, err
@@ -84,26 +82,6 @@ func NewTextureFromPath(state State, label string, buf []byte) (*Texture, error)
 		return nil, err
 	}
 
-	if texture.BindGroup, err = state.device.CreateBindGroup(&wgpu.BindGroupDescriptor{
-		Label:  fmt.Sprintf("Bind group (%s)", label),
-		Layout: state.texture_bind_group_layout,
-		Entries: []wgpu.BindGroupEntry{
-			{ // texture
-				Binding:     0,
-				TextureView: texture.view,
-			},
-			{ // sampler
-				Binding: 1,
-				Sampler: texture.sampler,
-			},
-		},
-	}); err != nil {
-		texture.texture.Release()
-		texture.view.Release()
-		texture.sampler.Release()
-		return nil, err
-	}
-
 	return texture, nil
 }
 
@@ -111,5 +89,4 @@ func (texture *Texture) Release() {
 	texture.texture.Release()
 	texture.view.Release()
 	texture.sampler.Release()
-	texture.BindGroup.Release()
 }
