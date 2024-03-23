@@ -31,6 +31,7 @@ type State struct {
 	pipeline          *wgpu.RenderPipeline
 	texture           *Texture
 	player            *Player
+	delta_time        float64
 }
 
 func (state *State) resize(width, height int) {
@@ -324,13 +325,13 @@ func main() {
 	}
 	defer state.bind_group.Release()
 
-	log.Println("Create sound system")
+	/*log.Println("Create sound system")
 	SoundSystem := NewSoundSystem()
 
 	log.Println("Play music")
 	if err := SoundSystem.PlaySound("res/sound/sos.mp3"); err != nil {
 		panic(err)
-	}
+	}*/
 
 	log.Println("Start main loop")
 
@@ -339,6 +340,11 @@ func main() {
 	})
 
 	for !state.win.ShouldClose() {
+		// Calculate delta time
+		current_time := glfw.GetTime()
+		state.delta_time = current_time - state.delta_time
+		state.delta_time = current_time
+
 		glfw.PollEvents()
 		state.update()
 		state.render()
