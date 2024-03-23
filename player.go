@@ -45,7 +45,7 @@ func NewPlayer(state *State) (*Player, error) {
 }
 
 func (player *Player) HandleInputs() {
-	speed := float32(0.05)
+	speed := float32(1.2 / 60)
 	multiplier := speed
 
 	// Camera movement
@@ -76,7 +76,7 @@ func (player *Player) HandleInputs() {
 }
 
 func (player *Player) HandleMouse() {
-	sensitivity := 0.4
+	sensitivity := 6
 
 	// Camera rotation
 	x, y := player.state.win.GetCursorPos()
@@ -98,14 +98,15 @@ func (player *Player) Release() {
 	player.MvpBuf.Release()
 }
 
+const M_TO_AYLIN = 1 / 1.64
+
 func (player *Player) mvp() *Mat {
 	width, height := player.state.win.GetSize()
 
-	player.p.Perspective(math.Pi/1.1, float32(width)/float32(height), 0.1, 500)
-	player.m.Translation(0, 0, 0)
+	player.p.Perspective(math.Pi/2, float32(width)/float32(height), 0.05, 50)
+	player.m.Scale(M_TO_AYLIN, M_TO_AYLIN, M_TO_AYLIN) // models are exported in metres, so we must convert to aylins
 	player.v.Identity()
 	player.v.Multiply(NewMat().Rotate2d((player.rotation[0] - math.Pi/2), player.rotation[1]))
-	//player.v.Multiply(NewMat().Rotate((player.rotation[0] - math.Pi/2), 0, 1, 0))
 	player.v.Multiply(NewMat().Translation(-player.position[0], -player.position[1], -player.position[2]))
 
 	mvp := NewMat().Multiply(player.p).Multiply(player.v).Multiply(player.m)
