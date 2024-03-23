@@ -328,6 +328,13 @@ func main() {
 	}
 	defer state.model.Release()
 
+	log.Println("Display text texture")
+
+	if _, err = NewTextureFromText(&state, "Text texture", "Hello, world!"); err != nil {
+		panic(err)
+	}
+	defer state.texture.Release()
+
 	log.Println("Create player")
 
 	if state.player, err = NewPlayer(&state); err != nil {
