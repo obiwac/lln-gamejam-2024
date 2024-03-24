@@ -41,9 +41,6 @@ func (sound_system *SoundSystem) PlaySound(path string) error {
 	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
 	speaker.Play(beeper)
 
-	// Don't loop the sound
-	// Add a way to stop the sound
-
 	// Calculate the duration of the sound
 	duration := float64(streamer.Len()) / float64(format.SampleRate.N(time.Second))
 
