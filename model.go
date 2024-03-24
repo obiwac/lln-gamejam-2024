@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math"
 	"unsafe"
 
 	"github.com/rajveermalviya/go-webgpu/wgpu"
@@ -25,6 +26,13 @@ type Vertex struct {
 	uv  [2]float32
 }
 
+type Heightmap struct {
+	neg_x, neg_z  float32
+	pos_x, pos_z  float32
+	res  int
+	heightmap   [][]float32
+}
+
 type Model struct {
 	state *State
 
@@ -35,12 +43,62 @@ type Model struct {
 	texture    *Texture
 	bind_group *wgpu.BindGroup
 
+	collider_off_x, collider_off_y, collider_off_z float32
+
+	heightmap *Heightmap
 	colliders []Collider
 }
 
-func NewModel(state *State, label string, vertices []Vertex, indices []uint32, texture []byte) (*Model, error) {
+func NewModel(state *State, label string, vertices []Vertex, indices []uint32, texture []byte, heightmap bool) (*Model, error) {
 	model := Model{state: state}
 	var err error
+
+	// heightmap shit
+
+	if heightmap {
+		vertex_count := len(vertices)
+		model.heightmap = &Heightmap{}
+
+		// get resolution & bounds
+
+		model.heightmap.res = int(math.Sqrt(float64(vertex_count))) // XXX insh'allah
+
+		model.heightmap.neg_x = 9999
+		model.heightmap.neg_z = 9999
+
+		model.heightmap.pos_x = -9999
+		model.heightmap.pos_z = -9999
+
+		for i := 0; i < vertex_count; i++ {
+			vertex := &vertices[i]
+
+			if vertex.pos[0] < model.heightmap.neg_x { model.heightmap.neg_x = vertex.pos[0] }
+			if vertex.pos[2] < model.heightmap.neg_z { model.heightmap.neg_z = vertex.pos[2] }
+			if vertex.pos[0] > model.heightmap.pos_x { model.heightmap.pos_x = vertex.pos[0] }
+			if vertex.pos[2] > model.heightmap.pos_z { model.heightmap.pos_z = vertex.pos[2] }
+		}
+
+		model.heightmap.heightmap = make([][]float32, model.heightmap.res)
+
+		for i := range(model.heightmap.heightmap) {
+			model.heightmap.heightmap[i] = make([]float32, model.heightmap.res)
+		}
+
+		// fill in values
+
+		for i := 0; i < vertex_count; i++ {
+			vertex := &vertices[i]
+
+			x := int(float32(model.heightmap.res) * (vertex.pos[0] - model.heightmap.neg_x) / (model.heightmap.pos_x - model.heightmap.neg_x))
+			z := int(float32(model.heightmap.res) * (vertex.pos[2] - model.heightmap.neg_z) / (model.heightmap.pos_z - model.heightmap.neg_z))
+
+			if x < 0 || z < 0 || x >= int(model.heightmap.res) || z >= int(model.heightmap.res) {
+				continue
+			}
+
+			model.heightmap.heightmap[x][z] = vertex.pos[1]
+		}
+	}
 
 	// vertex buffer shit
 
@@ -107,7 +165,7 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32, t
 	return &model, nil
 }
 
-func NewModelFromIvx(state *State, label string, ivx []byte, texture []byte) (*Model, error) {
+func NewModelFromIvx(state *State, label string, ivx []byte, texture []byte, heightmap bool) (*Model, error) {
 	header := (*IvxHeader)(unsafe.Pointer(&ivx[0]))
 
 	var indices []uint32
@@ -124,7 +182,7 @@ func NewModelFromIvx(state *State, label string, ivx []byte, texture []byte) (*M
 		vertices = append(vertices, *vertex)
 	}
 
-	return NewModel(state, label, vertices, indices, texture)
+	return NewModel(state, label, vertices, indices, texture, heightmap)
 }
 
 func (model *Model) Draw(render_pass *wgpu.RenderPassEncoder) {
