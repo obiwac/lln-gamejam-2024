@@ -15,3 +15,17 @@ Par Aymeric et Pierre-Yves
 2. Création de trois mondes différent en 3D
 3. Sound desing
 4. Rendering des mondes
+5. Un jeu
+
+---
+## Contrôles
+
+**Déplacement** : QZSD, WASD, flèches directionnelles
+
+**Rotation** : avec la souris
+
+--
+
+## Démo
+
+quoicoubeh.go
