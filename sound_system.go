@@ -11,8 +11,6 @@ import (
 
 type SoundSystem struct {
 	streamer beep.StreamSeekCloser
-	format   beep.Format
-	ctrl     *beep.Ctrl
 }
 
 func NewSoundSystem() *SoundSystem {
@@ -29,28 +27,15 @@ func (sound_system *SoundSystem) PlaySound(path string) error {
 	if err != nil {
 		return err
 	}
+	defer streamer.Close()
 
-	ctrl := &beep.Ctrl{Streamer: beep.Loop(-1, streamer), Paused: false}
-
-	sound_system.streamer = streamer
-	sound_system.format = format
-	sound_system.ctrl = ctrl
-
-	beeper := beep.Seq(sound_system.ctrl, beep.Resample(4, format.SampleRate, 44100, ctrl))
-
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-	speaker.Play(beeper)
-
-	// Calculate the duration of the sound
-	duration := float64(streamer.Len()) / float64(format.SampleRate.N(time.Second))
-
-	// Wait for the sound to finish
-	time.Sleep(time.Duration(duration) * time.Second)
-
-	// Close the sound
-	if err := sound_system.Close(); err != nil {
+	if err := speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10)); err != nil {
 		return err
 	}
+
+	speaker.Play(streamer)
+	sound_system.streamer = streamer
+
 	return nil
 }
 

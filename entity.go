@@ -117,7 +117,7 @@ func (entity *Entity) Update(models []*Model) {
 		}
 
 		trigger := earliest_collision.name
-		prossesTrigger(trigger)
+		prossesTrigger(trigger, *entity.state)
 
 		earliest_time -= .001
 
@@ -172,11 +172,11 @@ func (entity *Entity) Jump() {
 	}
 }
 
-func prossesTrigger(trigger string) {
+func prossesTrigger(trigger string, state State) {
 	if trigger == "Col_Sink" {
-		// do something
+		displayDialogue(getDialogues(), "intro2", &state)
 	} else if trigger == "Col_Door" {
-		// do something
+		println("Col_Door")
 	} else if trigger == "Col_Ukulele" {
 		// do something
 	} else if trigger == "Col_Portail" {
@@ -187,5 +187,15 @@ func prossesTrigger(trigger string) {
 		// do something
 	} else if trigger == "Col_Window" {
 		// do something
+	}
+}
+
+type SinkTrigger struct {
+	active bool
+}
+
+func NewSinkTrigger(active bool) *SinkTrigger {
+	return &SinkTrigger{
+		active: active,
 	}
 }

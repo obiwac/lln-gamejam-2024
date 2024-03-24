@@ -49,7 +49,10 @@ func displayDialogue(dialogues []*Dialog, name string, state *State) {
 		state.text = text
 	}
 
-	NewSoundSystem().PlaySound("res/sound/" + name + ".mp3")
+	soundSystem := NewSoundSystem()
+	if err := soundSystem.PlaySound("res/sound/" + name + ".mp3"); err != nil {
+		panic(err)
+	}
 }
 
 func getDialogue(dialogues []*Dialog, name string) string {
