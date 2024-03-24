@@ -16,25 +16,25 @@ func init() {
 }
 
 type State struct {
-	win           *glfw.Window
-	instance      *wgpu.Instance
-	surface       *wgpu.Surface
-	adapter       *wgpu.Adapter
-	device        *wgpu.Device
-	queue         *wgpu.Queue
-	config        *wgpu.SwapChainDescriptor
-	swapchain     *wgpu.SwapChain
-	depth_texture *Texture
+	win                 *glfw.Window
+	instance            *wgpu.Instance
+	surface             *wgpu.Surface
+	adapter             *wgpu.Adapter
+	device              *wgpu.Device
+	queue               *wgpu.Queue
+	config              *wgpu.SwapChainDescriptor
+	swapchain           *wgpu.SwapChain
+	depth_texture       *Texture
 	render_pass_manager *RenderPassManager
-	text          *Text
-	player        *Player
-	prev_time     float64
-	dt            float32
+	text                *Text
+	player              *Player
+	prev_time           float64
+	dt                  float32
 
 	// worlds
 
 	alexis_room *WorldAlexisRoom
-	apat		  *WorldApat
+	apat        *WorldApat
 
 	// pipelines
 
@@ -109,9 +109,6 @@ func (state *State) render() {
 
 	state.swapchain.Present()
 }
-
-//go:embed tools/coordinates.csv
-var coordinates_csv []byte
 
 func main() {
 	state := State{}
