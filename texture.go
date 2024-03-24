@@ -3,10 +3,12 @@ package main
 import (
 	"bytes"
 	"image"
+	"image/color"
 	"image/draw"
 	"image/png"
 
 	"github.com/rajveermalviya/go-webgpu/wgpu"
+	"golang.org/x/image/font"
 	"golang.org/x/image/font/basicfont"
 	"golang.org/x/image/math/fixed"
 )
@@ -152,23 +154,17 @@ func NewTextureFromText(state *State, label, text string) (*Texture, error) {
 }
 
 func textToImage(text string) image.Image {
-	font := basicfont.Face7x13
-	width := 0
-	height := 13
-	for _, c := range text {
-		bounds, _, _ := font.GlyphBounds(c)
-		width += (bounds.Max.X - bounds.Min.X).Ceil()
+	img := image.NewRGBA(image.Rect(0, 0, 300, 100))
+	point := fixed.Point26_6{X: fixed.I(0), Y: fixed.I(13)}
+
+	drawer := &font.Drawer{
+		Dst:  img,
+		Src:  image.NewUniform(color.RGBA{255, 255, 255, 255}),
+		Face: basicfont.Face7x13,
+		Dot:  point,
 	}
 
-	img := image.NewRGBA(image.Rect(0, 0, width, height))
-	x := 0
-	for _, c := range text {
-		dot := fixed.P(x, 13)
-		dr, mask, maskp, _, _ := font.Glyph(dot, c)
-		draw.DrawMask(img, img.Bounds(), image.White, image.Point{}, mask, maskp, draw.Over)
-		x += int(dr.Max.X - dr.Min.X)
-	}
-
+	drawer.DrawString(text)
 	return img
 }
 

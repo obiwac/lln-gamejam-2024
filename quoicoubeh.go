@@ -272,7 +272,7 @@ func main() {
 
 	log.Println("Create text")
 
-	if state.text, err = NewText(&state, "Quoicoubeh", 0, 0, 1, 1); err != nil {
+	if state.text, err = NewText(&state, "Quoi ? Coubeh.", 0, 0, 1, 1); err != nil {
 		panic(err)
 	}
 	defer state.text.Release()
