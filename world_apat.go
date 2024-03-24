@@ -39,16 +39,18 @@ func NewWorldApat(state *State) (*WorldApat, error) {
 
 	var err error
 
-	if apat.landscape, err = NewModelFromIvx(state, "Apat landscape", apat_landscape, apat_lightmap); err != nil {
+	if apat.landscape, err = NewModelFromIvx(state, "Apat landscape", apat_landscape, apat_lightmap, true); err != nil {
 		return nil, err
 	}
 
-	if apat.portal, err = NewModelFromIvx(state, "Apat portal", apat_portal, apat_lightmap); err != nil {
+	apat.landscape.collider_off_y = -10
+
+	if apat.portal, err = NewModelFromIvx(state, "Apat portal", apat_portal, apat_lightmap, false); err != nil {
 		apat.landscape.Release()
 		return nil, err
 	}
 
-	if apat.ukulele, err = NewModelFromIvx(state, "Apat ukulele", apat_ukulele, apat_lightmap); err != nil {
+	if apat.ukulele, err = NewModelFromIvx(state, "Apat ukulele", apat_ukulele, apat_lightmap, false); err != nil {
 		apat.landscape.Release()
 		apat.portal.Release()
 		return nil, err
@@ -61,7 +63,7 @@ func NewWorldApat(state *State) (*WorldApat, error) {
 }
 
 func (world *WorldApat) Render() {
-	world.state.player.mvp(NewMat().Translation(0, -10, 0))
+	world.state.player.mvp(NewMat().Translation(0, world.landscape.collider_off_y, 0))
 
 	world.state.render_pass_manager.Begin(wgpu.LoadOp_Clear, wgpu.LoadOp_Clear)
 	render_pass := world.state.render_pass_manager.render_pass

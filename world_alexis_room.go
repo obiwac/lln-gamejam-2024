@@ -35,11 +35,11 @@ func NewWorldAlexisRoom(state *State) (*WorldAlexisRoom, error) {
 
 	var err error
 
-	if room.room, err = NewModelFromIvx(state, "Alexis room", alexis_room, alexis_room_lightmap); err != nil {
+	if room.room, err = NewModelFromIvx(state, "Alexis room", alexis_room, alexis_room_lightmap, false); err != nil {
 		return nil, err
 	}
 
-	if room.door, err = NewModelFromIvx(state, "Alexis door", alexis_door, alexis_room_lightmap); err != nil {
+	if room.door, err = NewModelFromIvx(state, "Alexis door", alexis_door, alexis_room_lightmap, false); err != nil {
 		room.room.Release()
 		return nil, err
 	}
