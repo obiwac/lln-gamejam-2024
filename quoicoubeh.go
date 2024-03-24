@@ -264,10 +264,7 @@ func main() {
 
 	log.Println("Create text")
 
-	if state.text, err = NewText(&state, "Quoicoubeh", 0, 0, 1, 1); err != nil {
-		panic(err)
-	}
-	defer state.text.Release()
+	displayDialogue(getDialogues(), "intro1", &state)
 
 	/*log.Println("Create sound system")
 	SoundSystem := NewSoundSystem()
@@ -276,12 +273,6 @@ func main() {
 	if err := SoundSystem.PlaySound("res/sound/sos.mp3"); err != nil {
 		panic(err)
 	}*/
-
-	dialog := getDialogue(getDialogues(), "intro1")
-
-	if state.text, err = NewText(&state, dialog, 0, 0, 1, 1); err != nil {
-		panic(err)
-	}
 
 	log.Println("Start main loop")
 
