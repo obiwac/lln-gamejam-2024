@@ -388,13 +388,7 @@ func main() {
 	}
 	defer state.player.Release()
 
-	log.Println("Get colliders coordinates")
-
-	coordinates := GetCoordinatesFromCsv(coordinates_csv)
-
-	for _, coordinate := range coordinates {
-		log.Println(coordinate.MeshName, coordinate.MostPositive, coordinate.MostNegative)
-	}
+	log.Println(coordinates_csv)
 
 	log.Println("Create WebGPU bind group")
 

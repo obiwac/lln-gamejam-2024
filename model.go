@@ -29,6 +29,8 @@ type Model struct {
 	vbo         *wgpu.Buffer
 	ibo         *wgpu.Buffer
 	index_count uint32
+
+	colliders []Collider
 }
 
 func NewModel(state *State, label string, vertices []Vertex, indices []uint32) (*Model, error) {
@@ -54,6 +56,13 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32) (
 	}
 
 	model.index_count = uint32(len(indices))
+
+	colliders_coords := GetCoordinatesFromCsv(coordinates_csv)
+
+	for _, coords := range colliders_coords {
+		collider := NewCollider(coords.MostPositive, coords.MostNegative)
+		model.colliders = append(model.colliders, *collider)
+	}
 
 	return &model, nil
 }
