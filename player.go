@@ -32,7 +32,7 @@ func NewPlayer(state *State) (*Player, error) {
 	rotation := [2]float32{math.Pi / 2, 0}
 
 	return &Player{
-		Entity: *NewEntity(state, position, rotation, 0.2, 1.72),
+		Entity: *NewEntity(state, position, rotation, 0.2, 1.72*M_TO_AYLIN),
 		state:  state,
 
 		p: NewMat().Identity(),
