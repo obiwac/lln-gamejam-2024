@@ -28,9 +28,7 @@ func NewPlayer(state *State) (*Player, error) {
 		return nil, err
 	}
 
-	// Create collider
-
-	position := [3]float32{0, 1, 0}
+	position := [3]float32{0, 0, 0}
 	rotation := [2]float32{math.Pi / 2, 0}
 	velocity := [3]float32{0, 0, 0}
 
@@ -47,7 +45,7 @@ func NewPlayer(state *State) (*Player, error) {
 }
 
 func (player *Player) HandleInputs() {
-	speed := float32(1.2 / 60)
+	speed := float32(1.2)
 	multiplier := speed
 
 	// Camera movement
@@ -72,8 +70,8 @@ func (player *Player) HandleInputs() {
 
 	if input[1] != 0 || input[0] != 0 {
 		angle := player.rotation[0] - math.Pi/2 + float32(math.Atan2(float64(input[1]), float64(input[0])))
-		player.position[0] += float32(math.Cos(float64(angle))) * multiplier
-		player.position[2] += float32(math.Sin(float64(angle))) * multiplier
+		player.velocity[0] = float32(math.Cos(float64(angle))) * multiplier
+		player.velocity[2] = float32(math.Sin(float64(angle))) * multiplier
 	}
 }
 
@@ -105,11 +103,13 @@ const M_TO_AYLIN = 1 / 1.64
 func (player *Player) mvp() *Mat {
 	width, height := player.state.win.GetSize()
 
+	eyelevel := float32(1) // exactly one Aylin
+
 	player.p.Perspective(math.Pi/2, float32(width)/float32(height), 0.05, 50)
 	player.m.Scale(M_TO_AYLIN, M_TO_AYLIN, M_TO_AYLIN) // models are exported in metres, so we must convert to aylins
 	player.v.Identity()
 	player.v.Multiply(NewMat().Rotate2d((player.rotation[0] - math.Pi/2), player.rotation[1]))
-	player.v.Multiply(NewMat().Translation(-player.position[0], -player.position[1], -player.position[2]))
+	player.v.Multiply(NewMat().Translation(-player.position[0], -player.position[1]-eyelevel, -player.position[2]))
 
 	mvp := NewMat().Multiply(player.p).Multiply(player.v).Multiply(player.m)
 	return mvp
@@ -118,6 +118,8 @@ func (player *Player) mvp() *Mat {
 func (player *Player) Update() {
 	mvp := player.mvp()
 	player.state.queue.WriteBuffer(player.mvp_buf, 0, wgpu.ToBytes(mvp.Data[:]))
+
+	player.velocity = [3]float32{0, 0, 0}
 
 	player.HandleInputs()
 	player.HandleMouse()

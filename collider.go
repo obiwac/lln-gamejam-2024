@@ -34,7 +34,7 @@ func (collider *Collider) And(other *Collider) bool {
 	return x > 0 && y > 0 && z > 0
 }
 
-func (collider *Collider) Collide(col *Collider, velocity [3]float32) (float32, [3]float32) {
+func (collider *Collider) Collide(other *Collider, vx, vy, vz float32) (float32, [3]float32) {
 	x_entry := float32(0)
 	y_entry := float32(0)
 	z_entry := float32(0)
@@ -42,26 +42,26 @@ func (collider *Collider) Collide(col *Collider, velocity [3]float32) (float32, 
 	y_exit := float32(0)
 	z_exit := float32(0)
 
-	if velocity[0] > 0 {
-		x_entry = time_(col.position1[0]-collider.position2[0], velocity[0])
-		x_exit = time_(col.position2[0]-collider.position1[0], velocity[0])
+	if vx > 0 {
+		x_entry = time_(other.position1[0]-collider.position2[0], vx)
+		x_exit = time_(other.position2[0]-collider.position1[0], vx)
 	} else {
-		x_entry = time_(col.position2[0]-collider.position1[0], velocity[0])
-		x_exit = time_(col.position1[0]-collider.position2[0], velocity[0])
+		x_entry = time_(other.position2[0]-collider.position1[0], vx)
+		x_exit = time_(other.position1[0]-collider.position2[0], vx)
 	}
-	if velocity[1] > 0 {
-		y_entry = time_(col.position1[1]-collider.position2[1], velocity[1])
-		y_exit = time_(col.position2[1]-collider.position1[1], velocity[1])
+	if vy > 0 {
+		y_entry = time_(other.position1[1]-collider.position2[1], vy)
+		y_exit = time_(other.position2[1]-collider.position1[1], vy)
 	} else {
-		y_entry = time_(col.position2[1]-collider.position1[1], velocity[1])
-		y_exit = time_(col.position1[1]-collider.position2[1], velocity[1])
+		y_entry = time_(other.position2[1]-collider.position1[1], vy)
+		y_exit = time_(other.position1[1]-collider.position2[1], vy)
 	}
-	if velocity[2] > 0 {
-		z_entry = time_(col.position1[2]-collider.position2[2], velocity[2])
-		z_exit = time_(col.position2[2]-collider.position1[2], velocity[2])
+	if vz > 0 {
+		z_entry = time_(other.position1[2]-collider.position2[2], vz)
+		z_exit = time_(other.position2[2]-collider.position1[2], vz)
 	} else {
-		z_entry = time_(col.position2[2]-collider.position1[2], velocity[2])
-		z_exit = time_(col.position1[2]-collider.position2[2], velocity[2])
+		z_entry = time_(other.position2[2]-collider.position1[2], vz)
+		z_exit = time_(other.position1[2]-collider.position2[2], vz)
 	}
 
 	if x_entry < 0 && y_entry < 0 && z_entry < 0 {
@@ -79,71 +79,69 @@ func (collider *Collider) Collide(col *Collider, velocity [3]float32) (float32, 
 		return 1.0, [3]float32{}
 	}
 
-	normal_x := float32(1)
-	normal_y := float32(1)
-	normal_z := float32(1)
+	nx := float32(0)
+	ny := float32(0)
+	nz := float32(0)
 
-	if float32(entry) == x_entry {
-		if velocity[0] > 0 {
-			normal_x = -1
+	if entry == x_entry {
+		if vx > 0 {
+			nx = -1
+		} else {
+			nx = 1
 		}
-	} else {
-		normal_x = 0
 	}
-	if float32(entry) == y_entry {
-		if velocity[1] > 0 {
-			normal_y = -1
+	if entry == y_entry {
+		if vy > 0 {
+			ny = -1
+		} else {
+			ny = 1
 		}
-	} else {
-		normal_y = 0
 	}
-	if float32(entry) == z_entry {
-		if velocity[2] > 0 {
-			normal_z = -1
+	if entry == z_entry {
+		if vz > 0 {
+			nz = -1
+		} else {
+			nz = 1
 		}
-	} else {
-		normal_z = 0
 	}
 
-	return 0.0, [3]float32{float32(normal_x), float32(normal_y), float32(normal_z)}
+	return entry, [3]float32{float32(nx), float32(ny), float32(nz)}
 }
 
-func time_(x float32, y float32) float32 {
+func time_(x, y float32) float32 {
 	if y != 0 {
 		return x / y
-	} else {
-		return float32(math.Inf(int(x)))
 	}
+
+	inf := float32(99999999)
+
+	if x > 0 {
+		return -inf
+	}
+
+	return inf
 }
 
-func max3(x float32, y float32, z float32) float32 {
-	if x > y {
-		if x > z {
-			return x
-		} else {
-			return z
-		}
-	} else {
-		if y > z {
-			return y
-		} else {
-			return z
-		}
+func max3(x, y, z float32) float32 {
+	if x > y && x > z {
+		return x
 	}
+
+	if y > x && y > z {
+		return y
+	}
+
+	return z
 }
 
-func min3(x float32, y float32, z float32) float32 {
-	if x < y {
-		if x < z {
-			return x
-		} else {
-			return z
-		}
-	} else {
-		if y < z {
-			return y
-		} else {
-			return z
-		}
+func min3(x, y, z float32) float32 {
+	if x < y && x < z {
+		return x
 	}
+
+	if y < x && y < z {
+		return y
+	}
+
+	return z
 }

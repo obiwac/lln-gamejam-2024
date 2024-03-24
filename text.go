@@ -7,14 +7,14 @@ import (
 )
 
 type TextAttrs struct {
-	x, y  float32
+	x, y           float32
 	scale, scale_y float32
 }
 
 type Text struct {
-	state *State
-	bind_group *wgpu.BindGroup
-	texture     *Texture
+	state          *State
+	bind_group     *wgpu.BindGroup
+	texture        *Texture
 	text_attrs_buf *wgpu.Buffer
 }
 
@@ -38,7 +38,7 @@ func NewText(state *State, content string, x, y, scale_x, scale_y float32) (*Tex
 		Layout: state.text_pipeline.bind_group_layout,
 		Entries: []wgpu.BindGroupEntry{
 			{
-				Binding: 0,
+				Binding:     0,
 				TextureView: text.texture.view,
 			},
 			{
@@ -47,8 +47,8 @@ func NewText(state *State, content string, x, y, scale_x, scale_y float32) (*Tex
 			},
 			{
 				Binding: 2,
-				Buffer: text.text_attrs_buf,
-				Size: wgpu.WholeSize,
+				Buffer:  text.text_attrs_buf,
+				Size:    wgpu.WholeSize,
 			},
 		},
 	}); err != nil {
@@ -65,7 +65,7 @@ func NewText(state *State, content string, x, y, scale_x, scale_y float32) (*Tex
 	var attrs_bytes []byte
 
 	for i := 0; i < int(unsafe.Sizeof(attrs)); i++ {
-		byte := (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&attrs))+uintptr(i)))
+		byte := (*byte)(unsafe.Pointer(uintptr(unsafe.Pointer(&attrs)) + uintptr(i)))
 		attrs_bytes = append(attrs_bytes, *byte)
 	}
 

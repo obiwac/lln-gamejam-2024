@@ -9,7 +9,7 @@ import (
 
 type RegularPipeline struct {
 	Pipeline
-	vbo_layout    wgpu.VertexBufferLayout
+	vbo_layout wgpu.VertexBufferLayout
 }
 
 //go:embed shaders/regular.wgsl
@@ -69,7 +69,7 @@ func NewRegularPipeline(state *State) (*RegularPipeline, error) {
 	}
 
 	return &RegularPipeline{
-		Pipeline: *pipeline,
+		Pipeline:   *pipeline,
 		vbo_layout: vbo_layout,
 	}, nil
 }
