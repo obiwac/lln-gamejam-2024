@@ -88,8 +88,6 @@ func (entity *Entity) GetFirstCollision() {
 	}
 }
 
-// 8===================================================================================================D
-
 func GetMinPenetrationTime(potentialCollisions []PotentialCollision) (float32, [3]float32) {
 	minTime := float32(math.MaxFloat32)
 	var normal [3]float32

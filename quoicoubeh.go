@@ -277,6 +277,12 @@ func main() {
 		panic(err)
 	}*/
 
+	dialog := getDialogue(getDialogues(), "intro1")
+
+	if state.text, err = NewText(&state, dialog, 0, 0, 1, 1); err != nil {
+		panic(err)
+	}
+
 	log.Println("Start main loop")
 
 	state.win.SetSizeCallback(func(_ *glfw.Window, width, height int) {
