@@ -30,10 +30,9 @@ func NewPlayer(state *State) (*Player, error) {
 
 	position := [3]float32{0, 0, 0}
 	rotation := [2]float32{math.Pi / 2, 0}
-	velocity := [3]float32{0, 0, 0}
 
 	return &Player{
-		Entity: *NewEntity(position, rotation, velocity, 0.5, 1.72),
+		Entity: *NewEntity(position, rotation, 0.2, 1.72),
 		state:  state,
 
 		p: NewMat().Identity(),
@@ -45,8 +44,7 @@ func NewPlayer(state *State) (*Player, error) {
 }
 
 func (player *Player) HandleInputs() {
-	speed := float32(1.2)
-	multiplier := speed
+	speed := float32(1.5)
 
 	// Camera movement
 
@@ -68,10 +66,14 @@ func (player *Player) HandleInputs() {
 		input[0] = 1
 	}
 
+	if player.state.win.GetKey(glfw.KeySpace) == glfw.Press {
+		player.Jump()
+	}
+
 	if input[1] != 0 || input[0] != 0 {
-		angle := player.rotation[0] - math.Pi/2 + float32(math.Atan2(float64(input[1]), float64(input[0])))
-		player.velocity[0] = float32(math.Cos(float64(angle))) * multiplier
-		player.velocity[2] = float32(math.Sin(float64(angle))) * multiplier
+		angle := player.rot[0] - math.Pi/2 + float32(math.Atan2(float64(input[1]), float64(input[0])))
+		player.acc[0] = float32(math.Cos(float64(angle))) * speed
+		player.acc[2] = float32(math.Sin(float64(angle))) * speed
 	}
 }
 
@@ -82,10 +84,10 @@ func (player *Player) HandleMouse() {
 	x, y := player.state.win.GetCursorPos()
 	width, height := player.state.win.GetSize()
 
-	player.rotation[0] += float32((x-float64(width)/2)/float64(width)) * float32(sensitivity)
-	player.rotation[1] -= float32((y-float64(height)/2)/float64(height)) * float32(sensitivity)
+	player.rot[0] += float32((x-float64(width)/2)/float64(width)) * float32(sensitivity)
+	player.rot[1] -= float32((y-float64(height)/2)/float64(height)) * float32(sensitivity)
 
-	player.rotation[1] = float32(math.Max(-math.Pi/2, math.Min(math.Pi/2, float64(player.rotation[1]))))
+	player.rot[1] = float32(math.Max(-math.Pi/2, math.Min(math.Pi/2, float64(player.rot[1]))))
 
 	// Lock cursor in the center of the window
 	player.state.win.SetCursorPos(float64(width)/2, float64(height)/2)
@@ -105,11 +107,11 @@ func (player *Player) mvp() *Mat {
 
 	eyelevel := float32(1) // exactly one Aylin
 
-	player.p.Perspective(math.Pi/2, float32(width)/float32(height), 0.05, 50)
+	player.p.Perspective(math.Pi/2, float32(width)/float32(height), 0.01, 50)
 	player.m.Scale(M_TO_AYLIN, M_TO_AYLIN, M_TO_AYLIN) // models are exported in metres, so we must convert to aylins
 	player.v.Identity()
-	player.v.Multiply(NewMat().Rotate2d((player.rotation[0] - math.Pi/2), player.rotation[1]))
-	player.v.Multiply(NewMat().Translation(-player.position[0], -player.position[1]-eyelevel, -player.position[2]))
+	player.v.Multiply(NewMat().Rotate2d((player.rot[0] - math.Pi/2), player.rot[1]))
+	player.v.Multiply(NewMat().Translation(-player.pos[0], -player.pos[1]-eyelevel, -player.pos[2]))
 
 	mvp := NewMat().Multiply(player.p).Multiply(player.v).Multiply(player.m)
 	return mvp
@@ -118,8 +120,6 @@ func (player *Player) mvp() *Mat {
 func (player *Player) Update() {
 	mvp := player.mvp()
 	player.state.queue.WriteBuffer(player.mvp_buf, 0, wgpu.ToBytes(mvp.Data[:]))
-
-	player.velocity = [3]float32{0, 0, 0}
 
 	player.HandleInputs()
 	player.HandleMouse()
