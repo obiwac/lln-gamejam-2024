@@ -87,7 +87,7 @@ func (entity *Entity) Update(models []*Model) {
 	entity.grounded = false
 	entity.trigger_impulse = [3]float32{0, 0, 0}
 
-	for i := 0; i < 0; i++ {
+	for i := 0; i < 3; i++ {
 		vx := entity.vel[0] * dt
 		vy := entity.vel[1] * dt
 		vz := entity.vel[2] * dt

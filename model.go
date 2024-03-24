@@ -186,6 +186,22 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32, t
 	return &model, nil
 }
 
+func (model *Model) ColliderOffset(x, y, z float32) {
+	model.collider_off_x += x
+	model.collider_off_y += y
+	model.collider_off_z += z
+
+	for i := 0; i < len(model.colliders); i++ {
+		model.colliders[i].position1[0] += x
+		model.colliders[i].position1[1] += y
+		model.colliders[i].position1[2] += z
+
+		model.colliders[i].position2[0] += x
+		model.colliders[i].position2[1] += y
+		model.colliders[i].position2[2] += z
+	}
+}
+
 func NewModelFromIvx(state *State, label string, ivx []byte, texture []byte, heightmap bool) (*Model, error) {
 	header := (*IvxHeader)(unsafe.Pointer(&ivx[0]))
 
