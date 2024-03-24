@@ -100,7 +100,7 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32, t
 	colliders_coords := GetCoordinatesFromCsv(coordinates_csv)
 
 	for _, coords := range colliders_coords {
-		collider := NewCollider(coords.MostNegative, coords.MostPositive)
+		collider := NewCollider(coords.MeshName, coords.MostNegative, coords.MostPositive)
 		model.colliders = append(model.colliders, *collider)
 	}
 

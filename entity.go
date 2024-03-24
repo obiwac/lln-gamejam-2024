@@ -3,7 +3,7 @@ package main
 import "math"
 
 type Entity struct {
-	state *State
+	state       *State
 	pos         [3]float32
 	rot         [2]float32
 	vel         [3]float32
@@ -16,6 +16,7 @@ type Entity struct {
 }
 
 type PotentialCollision struct {
+	name      string
 	entryTime float32
 	normal    [3]float32
 }
@@ -27,7 +28,7 @@ var DRAG_FALL = []float32{1.8, .4, 1.8}
 
 func NewEntity(state *State, position [3]float32, rotation [2]float32, width float32, height float32) *Entity {
 	entity := &Entity{
-		state: 	  state,
+		state:       state,
 		pos:         position,
 		rot:         rotation,
 		vel:         [3]float32{0, 0, 0},
@@ -42,8 +43,9 @@ func NewEntity(state *State, position [3]float32, rotation [2]float32, width flo
 	return entity
 }
 
-func NewPotentialCollision(entryTime float32, normal [3]float32) *PotentialCollision {
+func NewPotentialCollision(name string, entryTime float32, normal [3]float32) *PotentialCollision {
 	return &PotentialCollision{
+		name:      name,
 		entryTime: entryTime,
 		normal:    normal,
 	}
@@ -90,9 +92,9 @@ func (entity *Entity) Update(models []*Model) {
 
 		for _, model := range models {
 			for _, collider := range model.colliders {
-				collided, normals := entity.collider.Collide(&collider, vx, vy, vz)
+				name, collided, normals := entity.collider.Collide(&collider, vx, vy, vz)
 				if collided < 1 {
-					potentialCollision := NewPotentialCollision(collided, normals)
+					potentialCollision := NewPotentialCollision(name, collided, normals)
 					candidates = append(candidates, *potentialCollision)
 				}
 			}
@@ -113,6 +115,9 @@ func (entity *Entity) Update(models []*Model) {
 		if earliest_time >= 1 {
 			break
 		}
+
+		trigger := earliest_collision.name
+		prossesTrigger(trigger)
 
 		earliest_time -= .001
 
@@ -164,5 +169,23 @@ func (entity *Entity) Update(models []*Model) {
 func (entity *Entity) Jump() {
 	if entity.grounded {
 		entity.vel[1] = float32(math.Sqrt(-2 * float64(GRAVITY_ACCEL[1]*entity.jump_height)))
+	}
+}
+
+func prossesTrigger(trigger string) {
+	if trigger == "Col_Sink" {
+		// do something
+	} else if trigger == "Col_Door" {
+		// do something
+	} else if trigger == "Col_Ukulele" {
+		// do something
+	} else if trigger == "Col_Portail" {
+		// do something
+	} else if trigger == "Col_Apatien" {
+		// do something
+	} else if trigger == "Col_Lever" {
+		// do something
+	} else if trigger == "Col_Window" {
+		// do something
 	}
 }

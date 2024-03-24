@@ -5,12 +5,14 @@ import (
 )
 
 type Collider struct {
+	name      string
 	position1 [3]float32
 	position2 [3]float32
 }
 
-func NewCollider(position1 [3]float32, position2 [3]float32) *Collider {
+func NewCollider(name string, position1 [3]float32, position2 [3]float32) *Collider {
 	return &Collider{
+		name:      name,
 		position1: position1,
 		position2: position2,
 	}
@@ -34,7 +36,7 @@ func (collider *Collider) And(other *Collider) bool {
 	return x > 0 && y > 0 && z > 0
 }
 
-func (collider *Collider) Collide(other *Collider, vx, vy, vz float32) (float32, [3]float32) {
+func (collider *Collider) Collide(other *Collider, vx, vy, vz float32) (string, float32, [3]float32) {
 	x_entry := float32(0)
 	y_entry := float32(0)
 	z_entry := float32(0)
@@ -65,18 +67,18 @@ func (collider *Collider) Collide(other *Collider, vx, vy, vz float32) (float32,
 	}
 
 	if x_entry < 0 && y_entry < 0 && z_entry < 0 {
-		return 1.0, [3]float32{}
+		return other.name, 1.0, [3]float32{}
 	}
 
 	if x_entry > 1 || y_entry > 1 || z_entry > 1 {
-		return 1.0, [3]float32{}
+		return other.name, 1.0, [3]float32{}
 	}
 
 	entry := max3(x_entry, y_entry, z_entry)
 	exit := min3(x_exit, y_exit, z_exit)
 
 	if entry > exit {
-		return 1.0, [3]float32{}
+		return other.name, 1.0, [3]float32{}
 	}
 
 	nx := float32(0)
@@ -105,7 +107,7 @@ func (collider *Collider) Collide(other *Collider, vx, vy, vz float32) (float32,
 		}
 	}
 
-	return entry, [3]float32{float32(nx), float32(ny), float32(nz)}
+	return other.name, entry, [3]float32{float32(nx), float32(ny), float32(nz)}
 }
 
 func time_(x, y float32) float32 {
