@@ -4,10 +4,15 @@ go 1.20
 
 require github.com/hajimehoshi/oto v1.0.1
 
-require github.com/pkg/errors v0.9.1 // indirect
+require (
+	github.com/go-audio/riff v1.0.0 // indirect
+	github.com/pkg/errors v0.9.1 // indirect
+)
 
 require (
 	github.com/faiface/beep v1.1.0
+	github.com/go-audio/audio v1.0.0
+	github.com/go-audio/wav v1.1.0
 	github.com/go-gl/glfw/v3.3/glfw v0.0.0-20240307211618-a69d953ea142 // indirect
 	github.com/hajimehoshi/go-mp3 v0.3.4
 	github.com/rajveermalviya/go-webgpu v0.17.1 // indirect

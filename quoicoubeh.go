@@ -28,8 +28,8 @@ type State struct {
 	model         *Model
 	text          *Text
 	player        *Player
-	prev_time	  float64
-	dt    float32
+	prev_time     float64
+	dt            float32
 
 	// pipelines
 
@@ -266,14 +266,6 @@ func main() {
 	log.Println("Create text")
 
 	displayDialogue(getDialogues(), "intro1", &state)
-
-	/*log.Println("Create sound system")
-	SoundSystem := NewSoundSystem()
-
-	log.Println("Play music")
-	if err := SoundSystem.PlaySound("res/sound/sos.mp3"); err != nil {
-		panic(err)
-	}*/
 
 	log.Println("Start main loop")
 

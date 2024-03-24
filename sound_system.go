@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io"
+	"os"
 	"time"
 
 	"github.com/faiface/beep"
@@ -19,8 +19,13 @@ func NewSoundSystem() *SoundSystem {
 	return &SoundSystem{}
 }
 
-func (sound_system *SoundSystem) PlaySound(file io.ReadCloser) error {
-	streamer, format, err := mp3.Decode(file)
+func (sound_system *SoundSystem) PlaySound(path string) error {
+	f, err := os.Open(path)
+	if err != nil {
+		return err
+	}
+
+	streamer, format, err := mp3.Decode(f)
 	if err != nil {
 		return err
 	}
@@ -33,10 +38,30 @@ func (sound_system *SoundSystem) PlaySound(file io.ReadCloser) error {
 
 	beeper := beep.Seq(sound_system.ctrl, beep.Resample(4, format.SampleRate, 44100, ctrl))
 
-	if format.SampleRate != 0 {
-		speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
-		speaker.Play(beeper)
-	}
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+	speaker.Play(beeper)
 
+	// Don't loop the sound
+	// Add a way to stop the sound
+
+	// Calculate the duration of the sound
+	duration := float64(streamer.Len()) / float64(format.SampleRate.N(time.Second))
+
+	// Wait for the sound to finish
+	time.Sleep(time.Duration(duration) * time.Second)
+
+	// Close the sound
+	if err := sound_system.Close(); err != nil {
+		return err
+	}
+	return nil
+}
+
+func (sound_system *SoundSystem) Close() error {
+	if sound_system.streamer != nil {
+		if err := sound_system.streamer.Close(); err != nil {
+			return err
+		}
+	}
 	return nil
 }
