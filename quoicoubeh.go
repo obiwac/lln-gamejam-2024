@@ -1,4 +1,5 @@
 package main
+
 import (
 	"log"
 	"runtime"
@@ -138,6 +139,9 @@ var alexis_room_lightmap []byte
 //go:embed res/alexis-room.ivx
 var alexis_room []byte
 
+//go:embed tools/coordinates.csv
+var coordinates_csv []byte
+
 func main() {
 	state := State{}
 
@@ -179,8 +183,8 @@ func main() {
 
 	if state.adapter, err = state.instance.RequestAdapter(&wgpu.RequestAdapterOptions{
 		ForceFallbackAdapter: false,
-		BackendType: wgpu.BackendType_OpenGL,
-		CompatibleSurface: state.surface,
+		BackendType:          wgpu.BackendType_Metal,
+		CompatibleSurface:    state.surface,
 	}); err != nil {
 		panic(err)
 	}
@@ -383,6 +387,14 @@ func main() {
 		panic(err)
 	}
 	defer state.player.Release()
+
+	log.Println("Get colliders coordinates")
+
+	coordinates := GetCoordinatesFromCsv(coordinates_csv)
+
+	for _, coordinate := range coordinates {
+		log.Println(coordinate.MeshName, coordinate.MostPositive, coordinate.MostNegative)
+	}
 
 	log.Println("Create WebGPU bind group")
 
