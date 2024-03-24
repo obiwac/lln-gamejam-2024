@@ -34,7 +34,7 @@ func (collider *Collider) And(other *Collider) bool {
 	return x > 0 && y > 0 && z > 0
 }
 
-func (collider *Collider) Collide(col *Collider, velocity [3]float32) (int, [3]float32) {
+func (collider *Collider) Collide(col *Collider, velocity [3]float32) (float32, [3]float32) {
 	x_entry := float32(0)
 	y_entry := float32(0)
 	z_entry := float32(0)
@@ -65,18 +65,18 @@ func (collider *Collider) Collide(col *Collider, velocity [3]float32) (int, [3]f
 	}
 
 	if x_entry < 0 && y_entry < 0 && z_entry < 0 {
-		return 1, [3]float32{}
+		return 1.0, [3]float32{}
 	}
 
 	if x_entry > 1 || y_entry > 1 || z_entry > 1 {
-		return 1, [3]float32{}
+		return 1.0, [3]float32{}
 	}
 
 	entry := max3(x_entry, y_entry, z_entry)
 	exit := min3(x_exit, y_exit, z_exit)
 
 	if entry > exit {
-		return 1, [3]float32{}
+		return 1.0, [3]float32{}
 	}
 
 	normal_x := float32(1)
@@ -105,7 +105,7 @@ func (collider *Collider) Collide(col *Collider, velocity [3]float32) (int, [3]f
 		normal_z = 0
 	}
 
-	return 0, [3]float32{float32(normal_x), float32(normal_y), float32(normal_z)}
+	return 0.0, [3]float32{float32(normal_x), float32(normal_y), float32(normal_z)}
 }
 
 func time_(x float32, y float32) float32 {

@@ -32,8 +32,10 @@ type Model struct {
 	ibo         *wgpu.Buffer
 	index_count uint32
 
-	texture *Texture
+	texture    *Texture
 	bind_group *wgpu.BindGroup
+
+	colliders []Collider
 }
 
 func NewModel(state *State, label string, vertices []Vertex, indices []uint32, texture []byte) (*Model, error) {
@@ -75,7 +77,7 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32, t
 		Layout: state.regular_pipeline.bind_group_layout,
 		Entries: []wgpu.BindGroupEntry{
 			{
-				Binding: 0,
+				Binding:     0,
 				TextureView: model.texture.view,
 			},
 			{
@@ -84,8 +86,8 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32, t
 			},
 			{
 				Binding: 2,
-				Buffer: state.player.mvp_buf,
-				Size: wgpu.WholeSize,
+				Buffer:  state.player.mvp_buf,
+				Size:    wgpu.WholeSize,
 			},
 		},
 	}); err != nil {
@@ -93,6 +95,13 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32, t
 		model.ibo.Release()
 		model.texture.Release()
 		return nil, err
+	}
+
+	colliders_coords := GetCoordinatesFromCsv(coordinates_csv)
+
+	for _, coords := range colliders_coords {
+		collider := NewCollider(coords.MostPositive, coords.MostNegative)
+		model.colliders = append(model.colliders, *collider)
 	}
 
 	return &model, nil

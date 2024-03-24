@@ -9,11 +9,11 @@ import (
 
 type coordinates struct {
 	MeshName     string
-	MostPositive [3]float64
-	MostNegative [3]float64
+	MostPositive [3]float32
+	MostNegative [3]float32
 }
 
-func NewCoordinates(meshName string, mostPositive [3]float64, mostNegative [3]float64) *coordinates {
+func NewCoordinates(meshName string, mostPositive [3]float32, mostNegative [3]float32) *coordinates {
 	return &coordinates{
 		MeshName:     meshName,
 		MostPositive: mostPositive,
@@ -32,8 +32,8 @@ func GetCoordinatesFromCsv(csvFile []byte) []*coordinates {
 	coordinates := make([]*coordinates, 0)
 	for i := 1; i < len(records); i++ {
 		record := records[i]
-		mostPositive := [3]float64{convertToFloat64(record[1]), convertToFloat64(record[2]), convertToFloat64(record[3])}
-		mostNegative := [3]float64{convertToFloat64(record[4]), convertToFloat64(record[5]), convertToFloat64(record[6])}
+		mostPositive := [3]float32{convertToFloat32(record[1]), convertToFloat32(record[2]), convertToFloat32(record[3])}
+		mostNegative := [3]float32{convertToFloat32(record[4]), convertToFloat32(record[5]), convertToFloat32(record[6])}
 		coordinates = append(coordinates, NewCoordinates(record[0], mostPositive, mostNegative))
 	}
 
@@ -41,11 +41,11 @@ func GetCoordinatesFromCsv(csvFile []byte) []*coordinates {
 }
 
 // Function to convert string to float64
-func convertToFloat64(value string) float64 {
+func convertToFloat32(value string) float32 {
 	value = strings.TrimSpace(value) // Trim leading and trailing spaces
-	floatValue, err := strconv.ParseFloat(value, 64)
+	floatValue, err := strconv.ParseFloat(value, 32)
 	if err != nil {
 		log.Fatal(err)
 	}
-	return floatValue
+	return float32(floatValue)
 }
