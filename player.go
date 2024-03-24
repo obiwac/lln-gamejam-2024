@@ -15,6 +15,8 @@ type Player struct {
 	v *Mat
 
 	mvp_buf *wgpu.Buffer
+
+	roll float32
 }
 
 func NewPlayer(state *State) (*Player, error) {
@@ -110,9 +112,20 @@ func (player *Player) mvp(m *Mat) *Mat {
 	player.v.Multiply(NewMat().Rotate2d((player.rot[0] - math.Pi/2), player.rot[1]))
 	player.v.Multiply(NewMat().Translation(-player.pos[0], -player.pos[1]-eyelevel, -player.pos[2]))
 
+	target_roll := 0.
+
+	if player.Entity.pos[1] < -1 && !player.state.apat.portal_lit {
+		displayDialogue(getDialogues(), "ukulele1", player.state)
+		player.state.alexis_room.should_draw = false
+		target_roll = math.Pi
+	}
+
+	player.roll += (float32(target_roll) - player.roll) * player.state.dt * 1
+
+	roll_mat := NewMat().Rotate(player.roll, 0, 0, 1)
 	aylin_conversion_mat := NewMat().Scale(M_TO_AYLIN, M_TO_AYLIN, M_TO_AYLIN)
 
-	mvp := NewMat().Multiply(player.p).Multiply(player.v).Multiply(m).Multiply(aylin_conversion_mat)
+	mvp := NewMat().Multiply(player.p).Multiply(roll_mat).Multiply(player.v).Multiply(m).Multiply(aylin_conversion_mat)
 	player.state.queue.WriteBuffer(player.mvp_buf, 0, wgpu.ToBytes(mvp.Data[:]))
 
 	return mvp

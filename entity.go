@@ -218,6 +218,8 @@ func (entity *Entity) Jump() {
 	}
 }
 
+var apat_already_spoken = false
+
 func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Collider) {
 	if trigger == "Col_Sink" && !state.alexis_room.sink_activated {
 		displayDialogue(getDialogues(), "intro2", state)
@@ -236,6 +238,10 @@ func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Col
 	} else if trigger == "Col_Purple" && state.apat.ukulele_activated {
 		displayDialogue(getDialogues(), "nether1", state)
 	} else if trigger == "Col_Apat" {
-		displayDialogue(getDialogues(), "bonus", state)
+		if apat_already_spoken {
+			displayDialogue(getDialogues(), "bonus", state)
+		} else {
+			displayDialogue(getDialogues(), "ukulele2", state)
+		}
 	}
 }

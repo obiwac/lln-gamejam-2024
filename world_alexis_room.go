@@ -16,6 +16,7 @@ type WorldAlexisRoom struct {
 	door_angle  float32
 
 	sink_activated bool
+	should_draw bool
 }
 
 //go:embed res/alexis-room-lightmap.png
@@ -32,6 +33,7 @@ func NewWorldAlexisRoom(state *State) (*WorldAlexisRoom, error) {
 	room.World = World{state: state}
 
 	room.sink_activated = false
+	room.should_draw = true
 
 	var err error
 
@@ -50,6 +52,10 @@ func NewWorldAlexisRoom(state *State) (*WorldAlexisRoom, error) {
 var DOOR_ORIGIN = [3]float32{2.856, 2.4643, 0.8}
 
 func (world *WorldAlexisRoom) Render() {
+	if !world.should_draw {
+		return
+	}
+
 	world.state.player.mvp(NewMat())
 
 	world.state.render_pass_manager.Begin(wgpu.LoadOp_Load, wgpu.LoadOp_Load)
