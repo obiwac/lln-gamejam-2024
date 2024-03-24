@@ -12,7 +12,6 @@ type Player struct {
 	state *State
 
 	p *Mat
-	m *Mat
 	v *Mat
 
 	mvp_buf *wgpu.Buffer
@@ -36,7 +35,6 @@ func NewPlayer(state *State) (*Player, error) {
 		state:  state,
 
 		p: NewMat().Identity(),
-		m: NewMat().Identity(),
 		v: NewMat().Identity(),
 
 		mvp_buf: mvp_buf,
@@ -98,29 +96,29 @@ func (player *Player) Release() {
 
 const M_TO_AYLIN = 1 / 1.64
 
-func (player *Player) mvp() *Mat {
+func (player *Player) mvp(m *Mat) *Mat {
 	width, height := player.state.win.GetSize()
-
 	eyelevel := float32(1) // exactly one Aylin
 
 	player.p.Perspective(math.Pi/2, float32(width)/float32(height), 0.01, 50)
-	player.m.Scale(M_TO_AYLIN, M_TO_AYLIN, M_TO_AYLIN) // models are exported in metres, so we must convert to aylins
+
 	player.v.Identity()
 	player.v.Multiply(NewMat().Rotate2d((player.rot[0] - math.Pi/2), player.rot[1]))
 	player.v.Multiply(NewMat().Translation(-player.pos[0], -player.pos[1]-eyelevel, -player.pos[2]))
 
-	mvp := NewMat().Multiply(player.p).Multiply(player.v).Multiply(player.m)
+	aylin_conversion_mat := NewMat().Scale(M_TO_AYLIN, M_TO_AYLIN, M_TO_AYLIN)
+
+	mvp := NewMat().Multiply(player.p).Multiply(player.v).Multiply(m).Multiply(aylin_conversion_mat)
+	player.state.queue.WriteBuffer(player.mvp_buf, 0, wgpu.ToBytes(mvp.Data[:]))
+
 	return mvp
 }
 
 func (player *Player) Update() {
-	mvp := player.mvp()
-	player.state.queue.WriteBuffer(player.mvp_buf, 0, wgpu.ToBytes(mvp.Data[:]))
-
 	player.HandleInputs()
 	player.HandleMouse()
 
-	player.Entity.Update([]*Model{player.state.model}) // Fix: Pass a slice of Model instead of a single *Model
+	player.Entity.Update([]*Model{player.state.alexis_room.room}) // Fix: Pass a slice of Model instead of a single *Model
 
 	if player.state.win.GetKey(glfw.KeyEscape) == glfw.Press {
 		println("Escape pressed -> Close window")
