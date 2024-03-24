@@ -8,6 +8,7 @@ type Collider struct {
 	name      string
 	position1 [3]float32
 	position2 [3]float32
+	ignore    bool
 }
 
 func NewCollider(name string, position1 [3]float32, position2 [3]float32) *Collider {
@@ -15,6 +16,7 @@ func NewCollider(name string, position1 [3]float32, position2 [3]float32) *Colli
 		name:      name,
 		position1: position1,
 		position2: position2,
+		ignore:    false,
 	}
 }
 
