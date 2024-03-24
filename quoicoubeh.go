@@ -103,9 +103,11 @@ func (state *State) render() {
 
 	// draw text
 
+	/*
 	state.render_pass_manager.Begin(wgpu.LoadOp_Load, wgpu.LoadOp_Clear)
 	state.text.Draw(state.render_pass_manager.render_pass)
 	state.render_pass_manager.End()
+	*/
 
 	state.swapchain.Present()
 }

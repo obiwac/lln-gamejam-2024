@@ -7,6 +7,7 @@ type Entity struct {
 	pos         [3]float32
 	rot         [2]float32
 	vel         [3]float32
+	trigger_impulse         [3]float32
 	acc         [3]float32
 	jump_height float32
 	width       float32
@@ -84,6 +85,7 @@ func (entity *Entity) Update(models []*Model) {
 	// collide with colliders
 
 	entity.grounded = false
+	entity.trigger_impulse = [3]float32{0, 0, 0}
 
 	for i := 0; i < 3; i++ {
 		vx := entity.vel[0] * dt
@@ -122,7 +124,7 @@ func (entity *Entity) Update(models []*Model) {
 		}
 
 		trigger := earliest_collision.name
-		prossesTrigger(trigger, entity.state, earliest_collision.collider)
+		entity.prossesTrigger(trigger, entity.state, earliest_collision.collider)
 
 		earliest_time -= .001
 
@@ -169,6 +171,12 @@ func (entity *Entity) Update(models []*Model) {
 	entity.vel[0] -= abs_min(entity.vel[0]*fx*dt, entity.vel[0])
 	entity.vel[1] -= abs_min(entity.vel[1]*fy*dt, entity.vel[1])
 	entity.vel[2] -= abs_min(entity.vel[2]*fz*dt, entity.vel[2])
+
+	// trigger impulse
+
+	entity.vel[0] += entity.trigger_impulse[0]
+	entity.vel[1] += entity.trigger_impulse[1]
+	entity.vel[2] += entity.trigger_impulse[2]
 }
 
 func (entity *Entity) Jump() {
@@ -177,15 +185,16 @@ func (entity *Entity) Jump() {
 	}
 }
 
-func prossesTrigger(trigger string, state *State, collider *Collider) {
+func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Collider) {
 	if trigger == "Col_Sink" {
 		displayDialogue(getDialogues(), "intro2", state)
-		collider.ignore = true
 		state.alexis_room.sink_activated = true
 	} else if trigger == "Col_Door" && state.alexis_room.sink_activated {
+		displayDialogue(getDialogues(), "outro4", state)
 		// TODO : i input
 		state.alexis_room.door_opened = true
 		collider.ignore = true
+		entity.trigger_impulse[0] = -30
 	} else if trigger == "Col_Ukulele" {
 	} else if trigger == "Col_Portail" {
 	} else if trigger == "Col_Apatien" {
