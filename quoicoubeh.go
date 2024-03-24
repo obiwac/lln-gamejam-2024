@@ -175,9 +175,16 @@ func main() {
 
 	log.Println("Request WebGPU adapter")
 
+	backend_type := wgpu.BackendType_Undefined
+
+	if runtime.GOOS == "freebsd" {
+		log.Println("FreeBSD detected, there are some driver issues with Vulkan on MESA, using OpenGL backend instead")
+		backend_type = wgpu.BackendType_OpenGL
+	}
+
 	if state.adapter, err = state.instance.RequestAdapter(&wgpu.RequestAdapterOptions{
 		ForceFallbackAdapter: false,
-		BackendType:          wgpu.BackendType_OpenGL,
+		BackendType:          backend_type,
 		CompatibleSurface:    state.surface,
 	}); err != nil {
 		panic(err)
