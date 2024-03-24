@@ -9,6 +9,12 @@ import (
 	"github.com/faiface/beep/speaker"
 )
 
+type DecodedSound struct {
+	name     string
+	streamer beep.StreamSeekCloser
+	format   beep.Format
+}
+
 type SoundSystem struct {
 	streamer beep.StreamSeekCloser
 	format   beep.Format
@@ -19,16 +25,15 @@ func NewSoundSystem() *SoundSystem {
 	return &SoundSystem{}
 }
 
-func (sound_system *SoundSystem) PlaySound(path string) error {
-	f, err := os.Open(path)
-	if err != nil {
-		return err
-	}
+func (sound_system *SoundSystem) InitSpeaker(format beep.Format) {
+	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
+}
 
-	streamer, format, err := mp3.Decode(f)
-	if err != nil {
-		return err
-	}
+func (sound_system *SoundSystem) PlaySound(name string, state *State) error {
+	sound := state.decodeded_sounds[name]
+
+	streamer := sound.streamer
+	format := sound.format
 
 	ctrl := &beep.Ctrl{Streamer: beep.Loop(1, streamer), Paused: false}
 
@@ -37,8 +42,6 @@ func (sound_system *SoundSystem) PlaySound(path string) error {
 	sound_system.ctrl = ctrl
 
 	beeper := beep.Seq(sound_system.ctrl, beep.Resample(4, format.SampleRate, 44100, ctrl))
-
-	speaker.Init(format.SampleRate, format.SampleRate.N(time.Second/10))
 	speaker.Play(beeper)
 
 	return nil
@@ -51,4 +54,10 @@ func (sound_system *SoundSystem) Close() error {
 		}
 	}
 	return nil
+}
+
+func DecodeFile(path string) *DecodedSound {
+	f, _ := os.Open(path)
+	streamer, format, _ := mp3.Decode(f)
+	return &DecodedSound{path, streamer, format}
 }

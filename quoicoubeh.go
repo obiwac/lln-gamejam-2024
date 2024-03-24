@@ -36,6 +36,8 @@ type State struct {
 	alexis_room *WorldAlexisRoom
 	apat        *WorldApat
 
+	decodeded_sounds map[string]*DecodedSound
+
 	// pipelines
 
 	regular_pipeline *RegularPipeline
@@ -104,9 +106,9 @@ func (state *State) render() {
 	// draw text
 
 	/*
-	state.render_pass_manager.Begin(wgpu.LoadOp_Load, wgpu.LoadOp_Clear)
-	state.text.Draw(state.render_pass_manager.render_pass)
-	state.render_pass_manager.End()
+		state.render_pass_manager.Begin(wgpu.LoadOp_Load, wgpu.LoadOp_Clear)
+		state.text.Draw(state.render_pass_manager.render_pass)
+		state.render_pass_manager.End()
 	*/
 
 	state.swapchain.Present()
@@ -248,11 +250,31 @@ func main() {
 	}
 	defer state.apat.Release()
 
+	log.Println("Decode sounds")
+
+	state.decodeded_sounds = make(map[string]*DecodedSound)
+	state.decodeded_sounds["bonus"] = DecodeFile("res/sound/bonus.mp3")
+	state.decodeded_sounds["intro1"] = DecodeFile("res/sound/intro1.mp3")
+	state.decodeded_sounds["intro2"] = DecodeFile("res/sound/intro2.mp3")
+	state.decodeded_sounds["nether1"] = DecodeFile("res/sound/nether1.mp3")
+	state.decodeded_sounds["nether2"] = DecodeFile("res/sound/nether2.mp3")
+	state.decodeded_sounds["nether3"] = DecodeFile("res/sound/nether3.mp3")
+	state.decodeded_sounds["nether4"] = DecodeFile("res/sound/nether4.mp3")
+	state.decodeded_sounds["outro1"] = DecodeFile("res/sound/outro1.mp3")
+	state.decodeded_sounds["outro2"] = DecodeFile("res/sound/outro2.mp3")
+	state.decodeded_sounds["outro3"] = DecodeFile("res/sound/outro3.mp3")
+	state.decodeded_sounds["outro4"] = DecodeFile("res/sound/outro4.mp3")
+	state.decodeded_sounds["ukulele1"] = DecodeFile("res/sound/ukulele1.mp3")
+	state.decodeded_sounds["ukulele2"] = DecodeFile("res/sound/ukulele2.mp3")
+	state.decodeded_sounds["ukulele3"] = DecodeFile("res/sound/ukulele3.mp3")
+	state.decodeded_sounds["ukulele4"] = DecodeFile("res/sound/ukulele4.mp3")
+	state.decodeded_sounds["ukulele5"] = DecodeFile("res/sound/ukulele5.mp3")
+
+	log.Println("Start main loop")
+
 	log.Println("Create text")
 
 	displayDialogue(getDialogues(), "intro1", &state)
-
-	log.Println("Start main loop")
 
 	state.win.SetSizeCallback(func(_ *glfw.Window, width, height int) {
 		state.resize(width, height)
