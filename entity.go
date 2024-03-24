@@ -190,6 +190,7 @@ func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Col
 		displayDialogue(getDialogues(), "intro2", state)
 		state.alexis_room.sink_activated = true
 	} else if trigger == "Col_Door" && state.alexis_room.sink_activated {
+		displayDialogue(getDialogues(), "outro4", state)
 		// TODO : i input
 		state.alexis_room.door_opened = true
 		collider.ignore = true

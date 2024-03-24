@@ -11,6 +11,8 @@ import (
 //go:embed res/dialogues.csv
 var dialoguesCsv string
 
+var soundSystem *SoundSystem
+
 type Dialog struct {
 	name  string
 	value string
@@ -49,7 +51,10 @@ func displayDialogue(dialogues []*Dialog, name string, state *State) {
 		state.text = text
 	}
 
-	soundSystem := NewSoundSystem()
+	if soundSystem == nil {
+		soundSystem = NewSoundSystem()
+	}
+
 	if err := soundSystem.PlaySound("res/sound/" + name + ".mp3"); err != nil {
 		panic(err)
 	}
