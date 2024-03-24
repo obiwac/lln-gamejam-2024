@@ -197,7 +197,7 @@ func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Col
 	} else if trigger == "Col_Ukulele" {
 	} else if trigger == "Col_Portail" {
 	} else if trigger == "Col_Apatien" {
-		// TODO woooow
+		displayDialogue(getDialogues(), "bonus", state)
 	} else if trigger == "Col_Lever" {
 	} else if trigger == "Col_Window" {
 	}
