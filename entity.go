@@ -237,7 +237,8 @@ func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Col
 		collider.ignore = true
 		state.apat.portal_lit = true
 	} else if trigger == "Col_Purple" && state.apat.ukulele_picked_up {
-		displayDialogue(getDialogues(), "nether1", state)
+		displayDialogue(getDialogues(), "outro3", state)
+		state.obama_room.should_draw = true
 	} else if trigger == "Col_Apat" {
 		if apat_already_spoken {
 			displayDialogue(getDialogues(), "bonus", state)

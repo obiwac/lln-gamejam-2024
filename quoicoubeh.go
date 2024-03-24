@@ -35,6 +35,7 @@ type State struct {
 
 	alexis_room *WorldAlexisRoom
 	apat        *WorldApat
+	obama_room  *WorldObama
 
 	decodeded_sounds map[string]*DecodedSound
 
@@ -102,6 +103,7 @@ func (state *State) render() {
 
 	state.apat.Render()
 	state.alexis_room.Render()
+	state.obama_room.Render()
 
 	// draw text
 
@@ -246,6 +248,13 @@ func main() {
 	log.Println("Create Apat")
 
 	if state.apat, err = NewWorldApat(&state); err != nil {
+		panic(err)
+	}
+	defer state.apat.Release()
+
+	log.Println("Create Obama room")
+
+	if state.obama_room, err = NewWorldObama(&state); err != nil {
 		panic(err)
 	}
 	defer state.apat.Release()

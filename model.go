@@ -10,7 +10,7 @@ import (
 	_ "embed"
 )
 
-//go:embed tools/coordinates.csv
+//go:embed tools/alexis_room.csv
 var coordinates_csv []byte
 
 //go:embed tools/apat.csv
