@@ -101,7 +101,11 @@ func (state *State) render() {
 	state.apat.Render()
 	state.alexis_room.Render()
 
-	// state.text.Draw(render_pass)
+	// draw text
+
+	state.render_pass_manager.Begin(wgpu.LoadOp_Load, wgpu.LoadOp_Clear)
+	state.text.Draw(state.render_pass_manager.render_pass)
+	state.render_pass_manager.End()
 
 	state.swapchain.Present()
 }
@@ -247,7 +251,7 @@ func main() {
 
 	log.Println("Create text")
 
-	// displayDialogue(getDialogues(), "intro1", &state)
+	displayDialogue(getDialogues(), "intro1", &state)
 
 	log.Println("Start main loop")
 

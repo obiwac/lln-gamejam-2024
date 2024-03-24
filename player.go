@@ -64,6 +64,10 @@ func (player *Player) HandleInputs() {
 		input[0] = 1
 	}
 
+	if player.state.win.GetKey(glfw.KeySpace) == glfw.Press {
+		player.Jump()
+	}
+
 	if input[1] != 0 || input[0] != 0 {
 		angle := player.rot[0] - math.Pi/2 + float32(math.Atan2(float64(input[1]), float64(input[0])))
 		player.acc[0] = float32(math.Cos(float64(angle))) * speed
