@@ -120,6 +120,7 @@ func (entity *Entity) Update(models []*Model) {
 		}
 
 		if earliest_time >= 1 {
+			not_touching_apat = true
 			break
 		}
 
@@ -219,8 +220,10 @@ func (entity *Entity) Jump() {
 }
 
 var apat_already_spoken = false
+var not_touching_apat = true
 
 func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Collider) {
+	println("trig", trigger)
 	if trigger == "Col_Sink" && !state.alexis_room.sink_activated {
 		displayDialogue(getDialogues(), "intro2", state)
 		state.alexis_room.sink_activated = true
@@ -240,10 +243,19 @@ func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Col
 		displayDialogue(getDialogues(), "outro3", state)
 		state.obama_room.should_draw = true
 	} else if trigger == "Col_Apat" {
-		if apat_already_spoken {
-			displayDialogue(getDialogues(), "bonus", state)
-		} else {
-			displayDialogue(getDialogues(), "ukulele2", state)
+		println("apat")
+		if not_touching_apat {
+			if apat_already_spoken {
+				println("bonus")
+				// displayDialogue(getDialogues(), "bonus", state)
+			} else {
+				displayDialogue(getDialogues(), "ukulele2", state)
+				apat_already_spoken = true
+			}
+
+			not_touching_apat = false
 		}
+	} else {
+		not_touching_apat = false
 	}
 }

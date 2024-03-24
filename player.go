@@ -101,6 +101,7 @@ func (player *Player) Release() {
 }
 
 const M_TO_AYLIN = 1 / 1.64
+var doneuk1 = false
 
 func (player *Player) mvp(m *Mat) *Mat {
 	width, height := player.state.win.GetSize()
@@ -115,7 +116,10 @@ func (player *Player) mvp(m *Mat) *Mat {
 	target_roll := 0.
 
 	if player.Entity.pos[1] < -1 && !player.state.apat.portal_lit {
-		displayDialogue(getDialogues(), "ukulele1", player.state)
+		if !doneuk1 {
+			displayDialogue(getDialogues(), "ukulele1", player.state)
+			doneuk1 = true
+		}
 		player.state.alexis_room.should_draw = false
 		target_roll = math.Pi
 	}
@@ -124,6 +128,12 @@ func (player *Player) mvp(m *Mat) *Mat {
 
 	roll_mat := NewMat().Rotate(player.roll, 0, 0, 1)
 	aylin_conversion_mat := NewMat().Scale(M_TO_AYLIN, M_TO_AYLIN, M_TO_AYLIN)
+
+	if player.state.obama_room.should_draw {
+		player.pos[0] = -2
+		player.pos[1] = 0
+		player.pos[2] = 0
+	}
 
 	mvp := NewMat().Multiply(player.p).Multiply(roll_mat).Multiply(player.v).Multiply(m).Multiply(aylin_conversion_mat)
 	player.state.queue.WriteBuffer(player.mvp_buf, 0, wgpu.ToBytes(mvp.Data[:]))
