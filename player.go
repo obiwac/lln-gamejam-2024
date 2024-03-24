@@ -122,7 +122,10 @@ func (player *Player) Update() {
 	player.HandleInputs()
 	player.HandleMouse()
 
-	player.Entity.Update([]*Model{player.state.alexis_room.room}) // Fix: Pass a slice of Model instead of a single *Model
+	player.Entity.Update([]*Model{
+		player.state.alexis_room.room,
+		player.state.apat.landscape,
+	})
 
 	if player.state.win.GetKey(glfw.KeyEscape) == glfw.Press {
 		println("Escape pressed -> Close window")

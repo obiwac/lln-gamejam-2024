@@ -87,7 +87,7 @@ func (entity *Entity) Update(models []*Model) {
 	entity.grounded = false
 	entity.trigger_impulse = [3]float32{0, 0, 0}
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 0; i++ {
 		vx := entity.vel[0] * dt
 		vy := entity.vel[1] * dt
 		vz := entity.vel[2] * dt
@@ -145,6 +145,39 @@ func (entity *Entity) Update(models []*Model) {
 		if earliest_collision.normal[2] != 0 {
 			entity.pos[2] += vz * earliest_time
 			entity.vel[2] = 0
+		}
+	}
+
+	// collide with heightmaps
+
+	for _, model := range models {
+		if model.heightmap == nil {
+			continue
+		}
+
+		px, py, pz := entity.pos[0], entity.pos[1], entity.pos[2]
+
+		px /= M_TO_AYLIN
+		py /= M_TO_AYLIN
+		pz /= M_TO_AYLIN
+
+		px -= model.collider_off_x
+		py -= model.collider_off_y
+		pz -= model.collider_off_z
+
+		x := int(float32(model.heightmap.res) * (px - model.heightmap.neg_x) / (model.heightmap.pos_x - model.heightmap.neg_x))
+		y := int(float32(model.heightmap.res) * (pz - model.heightmap.neg_z) / (model.heightmap.pos_z - model.heightmap.neg_z))
+
+		if x < 0 || y < 0 || x >= int(model.heightmap.res) || y >= int(model.heightmap.res) {
+			continue
+		}
+
+		height := model.heightmap.heightmap[x][y]
+
+		if py < height {
+			entity.pos[1] = height / M_TO_AYLIN + model.collider_off_y
+			entity.vel[1] = 0
+			entity.grounded = true
 		}
 	}
 
