@@ -19,6 +19,7 @@ type PotentialCollision struct {
 	name      string
 	entryTime float32
 	normal    [3]float32
+	collider  *Collider
 }
 
 var GRAVITY_ACCEL = []float32{0, -9.81, 0}
@@ -43,11 +44,12 @@ func NewEntity(state *State, position [3]float32, rotation [2]float32, width flo
 	return entity
 }
 
-func NewPotentialCollision(name string, entryTime float32, normal [3]float32) *PotentialCollision {
+func NewPotentialCollision(name string, entryTime float32, normal [3]float32, collider *Collider) *PotentialCollision {
 	return &PotentialCollision{
 		name:      name,
 		entryTime: entryTime,
 		normal:    normal,
+		collider:  collider,
 	}
 }
 
@@ -91,10 +93,13 @@ func (entity *Entity) Update(models []*Model) {
 		candidates := []PotentialCollision{}
 
 		for _, model := range models {
-			for _, collider := range model.colliders {
-				name, collided, normals := entity.collider.Collide(&collider, vx, vy, vz)
+			for j := 0; j < len(model.colliders); j++ {
+				if model.colliders[j].ignore {
+					continue
+				}
+				name, collided, normals := entity.collider.Collide(&model.colliders[j], vx, vy, vz)
 				if collided < 1 {
-					potentialCollision := NewPotentialCollision(name, collided, normals)
+					potentialCollision := NewPotentialCollision(name, collided, normals, &model.colliders[j])
 					candidates = append(candidates, *potentialCollision)
 				}
 			}
@@ -117,7 +122,7 @@ func (entity *Entity) Update(models []*Model) {
 		}
 
 		trigger := earliest_collision.name
-		prossesTrigger(trigger, *entity.state)
+		prossesTrigger(trigger, entity.state, earliest_collision.collider)
 
 		earliest_time -= .001
 
@@ -172,30 +177,30 @@ func (entity *Entity) Jump() {
 	}
 }
 
-func prossesTrigger(trigger string, state State) {
+func prossesTrigger(trigger string, state *State, collider *Collider) {
 	if trigger == "Col_Sink" {
-		displayDialogue(getDialogues(), "intro2", &state)
-	} else if trigger == "Col_Door" {
-		println("Col_Door")
+		displayDialogue(getDialogues(), "intro2", state)
+		collider.ignore = true
+		state.alexis_room.sink_activated = true
+	} else if trigger == "Col_Door" && state.alexis_room.sink_activated {
+		// TODO : i input
+		state.alexis_room.door_opened = true
+		collider.ignore = true
 	} else if trigger == "Col_Ukulele" {
-		// do something
 	} else if trigger == "Col_Portail" {
-		// do something
 	} else if trigger == "Col_Apatien" {
-		// do something
+		// TODO woooow
 	} else if trigger == "Col_Lever" {
-		// do something
 	} else if trigger == "Col_Window" {
-		// do something
 	}
 }
 
-type SinkTrigger struct {
-	active bool
-}
-
-func NewSinkTrigger(active bool) *SinkTrigger {
-	return &SinkTrigger{
-		active: active,
+func setColliderTrue(models []*Model, name string) {
+	for _, model := range models {
+		for _, collider := range model.colliders {
+			if collider.name == name {
+				collider.ignore = true
+			}
+		}
 	}
 }
