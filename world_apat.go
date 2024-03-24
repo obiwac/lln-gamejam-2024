@@ -43,7 +43,7 @@ func NewWorldApat(state *State) (*WorldApat, error) {
 		return nil, err
 	}
 
-	apat.landscape.collider_off_y = -10
+	apat.landscape.ColliderOffset(0, -10, 0)
 
 	if apat.portal, err = NewModelFromIvx(state, "Apat portal", apat_portal, apat_lightmap, false); err != nil {
 		apat.landscape.Release()
