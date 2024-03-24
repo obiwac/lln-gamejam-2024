@@ -1,9 +1,5 @@
 package main
 
-import (
-	"math"
-)
-
 type Entity struct {
 	position            [3]float32
 	rotation            [2]float32
@@ -40,66 +36,71 @@ func NewPotentialCollision(entryTime float32, normal [3]float32) *PotentialColli
 }
 
 func (entity *Entity) Update(models []*Model) {
-	entity.position[0] += entity.velocity[0]
-	entity.position[1] += entity.velocity[1]
-	entity.position[2] += entity.velocity[2]
+	dt := float32(1. / 60)
 
-	entity.UpdateCollider(models)
-}
+	// update collider
 
-func (entity *Entity) UpdateCollider(models []*Model) {
 	x, y, z := entity.position[0], entity.position[1], entity.position[2]
 
-	entity.collider.position1 = [3]float32{x - entity.width/2, y - entity.height/2, z - entity.width/2}
-	entity.collider.position2 = [3]float32{x + entity.width/2, y + entity.height/2, z + entity.width/2}
+	entity.collider.position1 = [3]float32{x - entity.width/2, y, z - entity.width/2}
+	entity.collider.position2 = [3]float32{x + entity.width/2, y + entity.height, z + entity.width/2}
 
-	entity.CheckCollisions(models)
-}
+	// collide with colliders
 
-func (entity *Entity) CheckCollisions(models []*Model) {
-	for _, model := range models {
-		for _, collider := range model.colliders {
-			collided, normals := collider.Collide(entity.collider, entity.velocity)
-			if collided == 1 {
-				potentialCollision := NewPotentialCollision(collided, normals)
-				entity.potentialCollisions = append(entity.potentialCollisions, *potentialCollision)
+	for i := 0; i < 3; i++ {
+		vx := entity.velocity[0] * dt
+		vy := entity.velocity[1] * dt
+		vz := entity.velocity[2] * dt
+
+		candidates := []PotentialCollision{}
+
+		for _, model := range models {
+			for _, collider := range model.colliders {
+				collided, normals := entity.collider.Collide(&collider, vx, vy, vz)
+				if collided < 1 {
+					potentialCollision := NewPotentialCollision(collided, normals)
+					candidates = append(candidates, *potentialCollision)
+				}
 			}
 		}
-	}
-}
 
-func (entity *Entity) GetFirstCollision() {
-	entryTime, normal := GetMinPenetrationTime(entity.potentialCollisions)
-	entryTime -= 0.0001
+		// get first collision
 
-	if normal[0] != 0 {
-		entity.position[0] += entity.velocity[0] * entryTime
-		entity.velocity[0] = 0
-	}
+		var earliest_collision PotentialCollision
+		earliest_time := float32(2)
 
-	if normal[1] != 0 {
-		entity.position[1] += entity.velocity[1] * entryTime
-		entity.velocity[1] = 0
-	}
+		for _, candidate := range candidates {
+			if candidate.entryTime < earliest_time {
+				earliest_collision = candidate
+				earliest_time = candidate.entryTime
+			}
+		}
 
-	if normal[2] != 0 {
-		entity.position[2] += entity.velocity[2] * entryTime
-		entity.velocity[2] = 0
-	}
-}
+		if earliest_time >= 1 {
+			break
+		}
 
-// 8===================================================================================================D
+		earliest_time -= .001
 
-func GetMinPenetrationTime(potentialCollisions []PotentialCollision) (float32, [3]float32) {
-	minTime := float32(math.MaxFloat32)
-	var normal [3]float32
+		if earliest_collision.normal[0] != 0 {
+			entity.position[0] += vx * earliest_time
+			entity.velocity[0] = 0
+		}
 
-	for _, potentialCollision := range potentialCollisions {
-		if potentialCollision.entryTime < minTime {
-			minTime = potentialCollision.entryTime
-			normal = potentialCollision.normal
+		if earliest_collision.normal[1] != 0 {
+			entity.position[1] += vy * earliest_time
+			entity.velocity[1] = 0
+		}
+
+		if earliest_collision.normal[2] != 0 {
+			entity.position[2] += vz * earliest_time
+			entity.velocity[2] = 0
 		}
 	}
 
-	return minTime, normal
+	// update position
+
+	entity.position[0] += entity.velocity[0] * dt
+	entity.position[1] += entity.velocity[1] * dt
+	entity.position[2] += entity.velocity[2] * dt
 }

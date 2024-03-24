@@ -48,7 +48,7 @@ func NewTextPipeline(state *State) (*TextPipeline, error) {
 	}
 
 	return &TextPipeline{
-		Pipeline:       *pipeline,
+		Pipeline: *pipeline,
 	}, nil
 }
 

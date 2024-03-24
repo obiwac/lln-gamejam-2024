@@ -57,7 +57,7 @@ func NewPipeline(state *State, label, src string, bind_group_layout_entries []wg
 		Vertex: wgpu.VertexState{
 			Module:     pipeline.shader,
 			EntryPoint: "vert_main",
-			Buffers: vbo_layouts,
+			Buffers:    vbo_layouts,
 		},
 		Fragment: &wgpu.FragmentState{
 			Module:     pipeline.shader,

@@ -32,8 +32,8 @@ func GetCoordinatesFromCsv(csvFile []byte) []*coordinates {
 	coordinates := make([]*coordinates, 0)
 	for i := 1; i < len(records); i++ {
 		record := records[i]
-		mostPositive := [3]float32{convertToFloat32(record[1]), convertToFloat32(record[2]), convertToFloat32(record[3])}
-		mostNegative := [3]float32{convertToFloat32(record[4]), convertToFloat32(record[5]), convertToFloat32(record[6])}
+		mostPositive := [3]float32{convertToFloat32(record[1]), convertToFloat32(record[3]), -convertToFloat32(record[5])}
+		mostNegative := [3]float32{convertToFloat32(record[4]), convertToFloat32(record[6]), -convertToFloat32(record[2])}
 		coordinates = append(coordinates, NewCoordinates(record[0], mostPositive, mostNegative))
 	}
 
@@ -47,5 +47,5 @@ func convertToFloat32(value string) float32 {
 	if err != nil {
 		log.Fatal(err)
 	}
-	return float32(floatValue)
+	return float32(floatValue) * M_TO_AYLIN
 }
