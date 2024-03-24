@@ -3,7 +3,6 @@ package main
 import (
 	"log"
 	"runtime"
-	"unsafe"
 
 	"github.com/go-gl/glfw/v3.3/glfw"
 	"github.com/rajveermalviya/go-webgpu/wgpu"
@@ -17,25 +16,24 @@ func init() {
 }
 
 type State struct {
-	win               *glfw.Window
-	instance          *wgpu.Instance
-	surface           *wgpu.Surface
-	adapter           *wgpu.Adapter
-	device            *wgpu.Device
-	queue             *wgpu.Queue
-	config            *wgpu.SwapChainDescriptor
-	swapchain         *wgpu.SwapChain
-	shader            *wgpu.ShaderModule
-	bind_group_layout *wgpu.BindGroupLayout
-	bind_group        *wgpu.BindGroup
-	vbo_layout        wgpu.VertexBufferLayout
-	depth_texture     *Texture
-	pipeline_layout   *wgpu.PipelineLayout
-	pipeline          *wgpu.RenderPipeline
-	texture           *Texture
-	model             *Model
-	player            *Player
-	delta_time        float64
+	win           *glfw.Window
+	instance      *wgpu.Instance
+	surface       *wgpu.Surface
+	adapter       *wgpu.Adapter
+	device        *wgpu.Device
+	queue         *wgpu.Queue
+	config        *wgpu.SwapChainDescriptor
+	swapchain     *wgpu.SwapChain
+	depth_texture *Texture
+	model         *Model
+	text          *Text
+	player        *Player
+	delta_time    float64
+
+	// pipelines
+
+	regular_pipeline *RegularPipeline
+	text_pipeline    *TextPipeline
 }
 
 func (state *State) resize(width, height int) {
@@ -101,7 +99,7 @@ func (state *State) render() {
 			},
 		},
 		DepthStencilAttachment: &wgpu.RenderPassDepthStencilAttachment{
-			View:              state.depth_texture.View,
+			View:              state.depth_texture.view,
 			DepthClearValue:   1,
 			DepthLoadOp:       wgpu.LoadOp_Clear,
 			DepthStoreOp:      wgpu.StoreOp_Store,
@@ -114,9 +112,8 @@ func (state *State) render() {
 	})
 	defer render_pass.Release()
 
-	render_pass.SetPipeline(state.pipeline)
-	render_pass.SetBindGroup(0, state.bind_group, nil)
 	state.model.Draw(render_pass)
+	state.text.Draw(render_pass)
 	render_pass.End()
 
 	cmd_buf, err := encoder.Finish(nil)
@@ -129,9 +126,6 @@ func (state *State) render() {
 	state.queue.Submit(cmd_buf)
 	state.swapchain.Present()
 }
-
-//go:embed shader.wgsl
-var shader_src string
 
 //go:embed res/alexis-room-lightmap.png
 var alexis_room_lightmap []byte
@@ -181,9 +175,16 @@ func main() {
 
 	log.Println("Request WebGPU adapter")
 
+	backend_type := wgpu.BackendType_Undefined
+
+	if runtime.GOOS == "freebsd" {
+		log.Println("FreeBSD detected, there are some driver issues with Vulkan on MESA, using OpenGL backend instead")
+		backend_type = wgpu.BackendType_OpenGL
+	}
+
 	if state.adapter, err = state.instance.RequestAdapter(&wgpu.RequestAdapterOptions{
 		ForceFallbackAdapter: false,
-		BackendType:          wgpu.BackendType_Metal,
+		BackendType:          backend_type,
 		CompatibleSurface:    state.surface,
 	}); err != nil {
 		panic(err)
@@ -226,70 +227,19 @@ func main() {
 	}
 	defer state.swapchain.Release()
 
-	log.Println("Create WebGPU shader module")
+	log.Println("Create WebGPU regular pipeline")
 
-	if state.shader, err = state.device.CreateShaderModule(&wgpu.ShaderModuleDescriptor{
-		Label: "shader.wgsl",
-		WGSLDescriptor: &wgpu.ShaderModuleWGSLDescriptor{
-			Code: shader_src,
-		},
-	}); err != nil {
+	if state.regular_pipeline, err = NewRegularPipeline(&state); err != nil {
 		panic(err)
 	}
-	defer state.shader.Release()
+	defer state.regular_pipeline.Release()
 
-	log.Println("Create WebGPU bind group layout")
+	log.Println("Create WebGPU text pipeline")
 
-	if state.bind_group_layout, err = state.device.CreateBindGroupLayout(&wgpu.BindGroupLayoutDescriptor{
-		Label: "Bind group layout",
-		Entries: []wgpu.BindGroupLayoutEntry{
-			{ // texture
-				Binding:    0,
-				Visibility: wgpu.ShaderStage_Fragment,
-				Texture: wgpu.TextureBindingLayout{
-					Multisampled:  false,
-					ViewDimension: wgpu.TextureViewDimension_2D,
-					SampleType:    wgpu.TextureSampleType_Float,
-				},
-			},
-			{ // sampler
-				Binding:    1,
-				Visibility: wgpu.ShaderStage_Fragment,
-				Sampler: wgpu.SamplerBindingLayout{
-					Type: wgpu.SamplerBindingType_Filtering,
-				},
-			},
-			{ // MVP matrix
-				Binding:    2,
-				Visibility: wgpu.ShaderStage_Vertex,
-				Buffer: wgpu.BufferBindingLayout{
-					Type: wgpu.BufferBindingType_Uniform,
-				},
-			},
-		},
-	}); err != nil {
+	if state.text_pipeline, err = NewTextPipeline(&state); err != nil {
 		panic(err)
 	}
-	defer state.bind_group_layout.Release()
-
-	log.Println("Create WebGPU VBO layout")
-
-	state.vbo_layout = wgpu.VertexBufferLayout{
-		ArrayStride: uint64(unsafe.Sizeof(Vertex{})),
-		StepMode:    wgpu.VertexStepMode_Vertex,
-		Attributes: []wgpu.VertexAttribute{
-			{
-				Format:         wgpu.VertexFormat_Float32x3,
-				Offset:         0,
-				ShaderLocation: 0,
-			},
-			{
-				Format:         wgpu.VertexFormat_Float32x2,
-				Offset:         4 * 3,
-				ShaderLocation: 1,
-			},
-		},
-	}
+	defer state.text_pipeline.Release()
 
 	log.Println("Create depth texture")
 
@@ -297,89 +247,6 @@ func main() {
 		panic(err)
 	}
 	defer state.depth_texture.Release()
-
-	log.Println("Create WebGPU pipeline layout")
-
-	if state.pipeline_layout, err = state.device.CreatePipelineLayout(&wgpu.PipelineLayoutDescriptor{
-		Label: "Pipeline layout",
-		BindGroupLayouts: []*wgpu.BindGroupLayout{
-			state.bind_group_layout,
-		},
-	}); err != nil {
-		panic(err)
-	}
-	defer state.pipeline_layout.Release()
-
-	log.Println("Create WebGPU render pipeline")
-
-	if state.pipeline, err = state.device.CreateRenderPipeline(&wgpu.RenderPipelineDescriptor{
-		Label:  "Render pipeline",
-		Layout: state.pipeline_layout,
-		Primitive: wgpu.PrimitiveState{
-			Topology:         wgpu.PrimitiveTopology_TriangleList,
-			StripIndexFormat: wgpu.IndexFormat_Undefined,
-			FrontFace:        wgpu.FrontFace_CCW,
-			CullMode:         wgpu.CullMode_None,
-		},
-		Vertex: wgpu.VertexState{
-			Module:     state.shader,
-			EntryPoint: "vert_main",
-			Buffers: []wgpu.VertexBufferLayout{
-				state.vbo_layout,
-			},
-		},
-		Fragment: &wgpu.FragmentState{
-			Module:     state.shader,
-			EntryPoint: "frag_main",
-			Targets: []wgpu.ColorTargetState{
-				{
-					Format:    state.config.Format,
-					Blend:     &wgpu.BlendState_Replace,
-					WriteMask: wgpu.ColorWriteMask_All,
-				},
-			},
-		},
-		DepthStencil: &wgpu.DepthStencilState{
-			Format:            DEPTH_FORMAT,
-			DepthWriteEnabled: true,
-			DepthCompare:      wgpu.CompareFunction_Less,
-			StencilFront: wgpu.StencilFaceState{
-				Compare: wgpu.CompareFunction_Always,
-			},
-			StencilBack: wgpu.StencilFaceState{
-				Compare: wgpu.CompareFunction_Always,
-			},
-		},
-		Multisample: wgpu.MultisampleState{
-			Count:                  1,
-			Mask:                   0xFFFFFFFF,
-			AlphaToCoverageEnabled: false,
-		},
-	}); err != nil {
-		panic(err)
-	}
-	defer state.pipeline.Release()
-
-	log.Println("Load texture")
-
-	if state.texture, err = NewTextureFromBytes(&state, "Alexis room lightmap", alexis_room_lightmap); err != nil {
-		panic(err)
-	}
-	defer state.texture.Release()
-
-	log.Println("Load model")
-
-	if state.model, err = NewModelFromIvx(&state, "Alexis room", alexis_room); err != nil {
-		panic(err)
-	}
-	defer state.model.Release()
-
-	log.Println("Display text texture")
-
-	if _, err = NewTextureFromText(&state, "Text texture", "Hello, world!"); err != nil {
-		panic(err)
-	}
-	defer state.texture.Release()
 
 	log.Println("Create player")
 
@@ -390,30 +257,19 @@ func main() {
 
 	log.Println(coordinates_csv)
 
-	log.Println("Create WebGPU bind group")
+	log.Println("Load model")
 
-	if state.bind_group, err = state.device.CreateBindGroup(&wgpu.BindGroupDescriptor{
-		Label:  "Bind group",
-		Layout: state.bind_group_layout,
-		Entries: []wgpu.BindGroupEntry{
-			{ // texture
-				Binding:     0,
-				TextureView: state.texture.View,
-			},
-			{ // sampler
-				Binding: 1,
-				Sampler: state.texture.sampler,
-			},
-			{ // MVP matrix
-				Binding: 2,
-				Buffer:  state.player.MvpBuf,
-				Size:    wgpu.WholeSize,
-			},
-		},
-	}); err != nil {
+	if state.model, err = NewModelFromIvx(&state, "Alexis room", alexis_room, alexis_room_lightmap); err != nil {
 		panic(err)
 	}
-	defer state.bind_group.Release()
+	defer state.model.Release()
+
+	log.Println("Create text")
+
+	if state.text, err = NewText(&state, "Quoicoubeh", 0, 0, 1, 1); err != nil {
+		panic(err)
+	}
+	defer state.text.Release()
 
 	/*log.Println("Create sound system")
 	SoundSystem := NewSoundSystem()

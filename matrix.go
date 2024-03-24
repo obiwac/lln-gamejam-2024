@@ -126,7 +126,7 @@ func (mat *Mat) Frustum(left, right, bottom, top, near, far float32) *Mat {
 }
 
 func (mat *Mat) Perspective(fov_y, aspect, near, far float32) *Mat {
-	frustum_y := float32(math.Tan(float64(fov_y/2)))
+	frustum_y := float32(math.Tan(float64(fov_y / 2)))
 	frustum_x := frustum_y * aspect
 
 	return mat.Frustum(-frustum_x*near, frustum_x*near, -frustum_y*near, frustum_y*near, near, far)
