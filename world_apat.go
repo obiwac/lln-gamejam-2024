@@ -10,11 +10,13 @@ type WorldApat struct {
 	World
 
 	landscape *Model
-	portal *Model
-	ukulele *Model
+	portal    *Model
+	ukulele   *Model
 
 	ukulele_picked_up bool
-	portal_lit bool
+	portal_lit        bool
+
+	ukulele_activated bool
 }
 
 //go:embed res/apat-lightmap.png
@@ -32,6 +34,8 @@ var apat_ukulele []byte
 func NewWorldApat(state *State) (*WorldApat, error) {
 	apat := &WorldApat{}
 	apat.World = World{state: state}
+
+	apat.ukulele_activated = false
 
 	var err error
 
@@ -64,11 +68,11 @@ func (world *WorldApat) Render() {
 
 	world.landscape.Draw(render_pass)
 
-	if (world.portal_lit) {
+	if world.portal_lit {
 		world.portal.Draw(render_pass)
 	}
 
-	if (!world.ukulele_picked_up) {
+	if !world.ukulele_picked_up {
 		world.ukulele.Draw(render_pass)
 	}
 

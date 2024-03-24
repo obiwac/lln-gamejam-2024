@@ -3,17 +3,17 @@ package main
 import "math"
 
 type Entity struct {
-	state       *State
-	pos         [3]float32
-	rot         [2]float32
-	vel         [3]float32
-	trigger_impulse         [3]float32
-	acc         [3]float32
-	jump_height float32
-	width       float32
-	height      float32
-	collider    *Collider
-	grounded    bool
+	state           *State
+	pos             [3]float32
+	rot             [2]float32
+	vel             [3]float32
+	trigger_impulse [3]float32
+	acc             [3]float32
+	jump_height     float32
+	width           float32
+	height          float32
+	collider        *Collider
+	grounded        bool
 }
 
 type PotentialCollision struct {
@@ -186,7 +186,7 @@ func (entity *Entity) Jump() {
 }
 
 func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Collider) {
-	if trigger == "Col_Sink" {
+	if trigger == "Col_Sink" && !state.alexis_room.sink_activated {
 		displayDialogue(getDialogues(), "intro2", state)
 		state.alexis_room.sink_activated = true
 	} else if trigger == "Col_Door" && state.alexis_room.sink_activated {
@@ -196,20 +196,13 @@ func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Col
 		collider.ignore = true
 		entity.trigger_impulse[0] = -30
 	} else if trigger == "Col_Ukulele" {
-	} else if trigger == "Col_Portail" {
-	} else if trigger == "Col_Apatien" {
+		displayDialogue(getDialogues(), "ukulele5", state)
+		state.alexis_room.door_opened = true
+		state.apat.ukulele_activated = true
+		collider.ignore = true
+	} else if trigger == "Col_Portail" && state.apat.ukulele_activated {
+		displayDialogue(getDialogues(), "nether1", state)
+	} else if trigger == "Col_Apat" {
 		displayDialogue(getDialogues(), "bonus", state)
-	} else if trigger == "Col_Lever" {
-	} else if trigger == "Col_Window" {
-	}
-}
-
-func setColliderTrue(models []*Model, name string) {
-	for _, model := range models {
-		for _, collider := range model.colliders {
-			if collider.name == name {
-				collider.ignore = true
-			}
-		}
 	}
 }
