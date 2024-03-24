@@ -25,11 +25,16 @@ type State struct {
 	config        *wgpu.SwapChainDescriptor
 	swapchain     *wgpu.SwapChain
 	depth_texture *Texture
-	model         *Model
+	render_pass_manager *RenderPassManager
 	text          *Text
 	player        *Player
 	prev_time     float64
 	dt            float32
+
+	// worlds
+
+	alexis_room *WorldAlexisRoom
+	apat		  *WorldApat
 
 	// pipelines
 
@@ -90,49 +95,20 @@ func (state *State) render() {
 	}
 	defer encoder.Release()
 
-	render_pass := encoder.BeginRenderPass(&wgpu.RenderPassDescriptor{
-		ColorAttachments: []wgpu.RenderPassColorAttachment{
-			{
-				View:       next_tex,
-				LoadOp:     wgpu.LoadOp_Clear,
-				StoreOp:    wgpu.StoreOp_Store,
-				ClearValue: wgpu.Color{R: 1, G: 0, B: 0, A: 1},
-			},
-		},
-		DepthStencilAttachment: &wgpu.RenderPassDepthStencilAttachment{
-			View:              state.depth_texture.view,
-			DepthClearValue:   1,
-			DepthLoadOp:       wgpu.LoadOp_Clear,
-			DepthStoreOp:      wgpu.StoreOp_Store,
-			DepthReadOnly:     false,
-			StencilClearValue: 0,
-			StencilLoadOp:     wgpu.LoadOp_Load,
-			StencilStoreOp:    wgpu.StoreOp_Store,
-			StencilReadOnly:   true,
-		},
-	})
-	defer render_pass.Release()
+	state.render_pass_manager.next_tex = next_tex
+	state.render_pass_manager.encoder = encoder
 
-	state.model.Draw(render_pass)
-	state.text.Draw(render_pass)
-	render_pass.End()
+	state.apat.Render()
+	state.alexis_room.Render()
 
-	cmd_buf, err := encoder.Finish(nil)
-	if err != nil {
-		log.Fatal(err)
-		return
-	}
-	defer cmd_buf.Release()
+	// draw text
 
-	state.queue.Submit(cmd_buf)
+	state.render_pass_manager.Begin(wgpu.LoadOp_Load, wgpu.LoadOp_Clear)
+	state.text.Draw(state.render_pass_manager.render_pass)
+	state.render_pass_manager.End()
+
 	state.swapchain.Present()
 }
-
-//go:embed res/alexis-room-lightmap.png
-var alexis_room_lightmap []byte
-
-//go:embed res/alexis-room.ivx
-var alexis_room []byte
 
 //go:embed tools/coordinates.csv
 var coordinates_csv []byte
@@ -249,6 +225,9 @@ func main() {
 	}
 	defer state.depth_texture.Release()
 
+	log.Println("Create render pass manager")
+	state.render_pass_manager = NewRenderPassManager(&state)
+
 	log.Println("Create player")
 
 	if state.player, err = NewPlayer(&state); err != nil {
@@ -256,12 +235,19 @@ func main() {
 	}
 	defer state.player.Release()
 
-	log.Println("Create model")
+	log.Println("Create Alexis' room")
 
-	if state.model, err = NewModelFromIvx(&state, "Alexis room", alexis_room, alexis_room_lightmap); err != nil {
+	if state.alexis_room, err = NewWorldAlexisRoom(&state); err != nil {
 		panic(err)
 	}
-	defer state.model.Release()
+	defer state.alexis_room.Release()
+
+	log.Println("Create Apat")
+
+	if state.apat, err = NewWorldApat(&state); err != nil {
+		panic(err)
+	}
+	defer state.apat.Release()
 
 	log.Println("Create text")
 
