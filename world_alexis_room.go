@@ -14,6 +14,8 @@ type WorldAlexisRoom struct {
 
 	door_opened bool
 	door_angle  float32
+
+	sink_activated bool
 }
 
 //go:embed res/alexis-room-lightmap.png
@@ -28,6 +30,8 @@ var alexis_door []byte
 func NewWorldAlexisRoom(state *State) (*WorldAlexisRoom, error) {
 	room := &WorldAlexisRoom{}
 	room.World = World{state: state}
+
+	room.sink_activated = false
 
 	var err error
 
@@ -62,9 +66,9 @@ func (world *WorldAlexisRoom) Render() {
 	world.door_angle += (target_door_angle - world.door_angle) * world.state.dt * 3
 
 	door_mat := NewMat()
-	door_mat.Multiply(NewMat().Translation(DOOR_ORIGIN[0] * M_TO_AYLIN, DOOR_ORIGIN[1] * M_TO_AYLIN, DOOR_ORIGIN[2] * M_TO_AYLIN))
+	door_mat.Multiply(NewMat().Translation(DOOR_ORIGIN[0]*M_TO_AYLIN, DOOR_ORIGIN[1]*M_TO_AYLIN, DOOR_ORIGIN[2]*M_TO_AYLIN))
 	door_mat.Multiply(NewMat().Rotate(world.door_angle, 0, 0, 1))
-	door_mat.Multiply(NewMat().Translation(-DOOR_ORIGIN[0] * M_TO_AYLIN, -DOOR_ORIGIN[1] * M_TO_AYLIN, -DOOR_ORIGIN[2] * M_TO_AYLIN))
+	door_mat.Multiply(NewMat().Translation(-DOOR_ORIGIN[0]*M_TO_AYLIN, -DOOR_ORIGIN[1]*M_TO_AYLIN, -DOOR_ORIGIN[2]*M_TO_AYLIN))
 
 	world.state.player.mvp(door_mat)
 

@@ -181,7 +181,10 @@ func prossesTrigger(trigger string, state *State, collider *Collider) {
 	if trigger == "Col_Sink" {
 		displayDialogue(getDialogues(), "intro2", state)
 		collider.ignore = true
-	} else if trigger == "Col_Door" {
+		state.alexis_room.sink_activated = true
+	} else if trigger == "Col_Door" && state.alexis_room.sink_activated {
+		// TODO : i input
+		state.alexis_room.door_opened = true
 		collider.ignore = true
 	} else if trigger == "Col_Ukulele" {
 	} else if trigger == "Col_Portail" {
