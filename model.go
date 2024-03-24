@@ -6,7 +6,15 @@ import (
 	"unsafe"
 
 	"github.com/rajveermalviya/go-webgpu/wgpu"
+
+	_ "embed"
 )
+
+//go:embed tools/coordinates.csv
+var coordinates_csv []byte
+
+//go:embed tools/apat.csv
+var apat_csv []byte
 
 type IvxHeader struct {
 	version_major uint64
@@ -155,9 +163,14 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32, t
 		return nil, err
 	}
 
-	colliders_coords := GetCoordinatesFromCsv(coordinates_csv)
+	colliders_coords_alexis_room := GetCoordinatesFromCsv(coordinates_csv)
+	for _, coords := range colliders_coords_alexis_room {
+		collider := NewCollider(coords.MeshName, coords.MostNegative, coords.MostPositive)
+		model.colliders = append(model.colliders, *collider)
+	}
 
-	for _, coords := range colliders_coords {
+	colliders_coords_ukulele := GetCoordinatesFromCsv(apat_csv)
+	for _, coords := range colliders_coords_ukulele {
 		collider := NewCollider(coords.MeshName, coords.MostNegative, coords.MostPositive)
 		model.colliders = append(model.colliders, *collider)
 	}

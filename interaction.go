@@ -53,9 +53,10 @@ func displayDialogue(dialogues []*Dialog, name string, state *State) {
 
 	if soundSystem == nil {
 		soundSystem = NewSoundSystem()
+		soundSystem.InitSpeaker(state.decodeded_sounds[name].format)
 	}
 
-	if err := soundSystem.PlaySound("res/sound/" + name + ".mp3"); err != nil {
+	if err := soundSystem.PlaySound(name, state); err != nil {
 		panic(err)
 	}
 }
