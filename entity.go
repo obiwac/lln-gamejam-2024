@@ -233,9 +233,10 @@ func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Col
 	} else if trigger == "Col_Ukulele" {
 		displayDialogue(getDialogues(), "ukulele5", state)
 		state.alexis_room.door_opened = true
-		state.apat.ukulele_activated = true
+		state.apat.ukulele_picked_up = true
 		collider.ignore = true
-	} else if trigger == "Col_Purple" && state.apat.ukulele_activated {
+		state.apat.portal_lit = true
+	} else if trigger == "Col_Purple" && state.apat.ukulele_picked_up {
 		displayDialogue(getDialogues(), "nether1", state)
 	} else if trigger == "Col_Apat" {
 		if apat_already_spoken {
