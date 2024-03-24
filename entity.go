@@ -19,14 +19,14 @@ type PotentialCollision struct {
 	normal    [3]float32
 }
 
-func NewEntity(position [3]float32, rotation [2]float32, velocity [3]float32, width float32, height float32, collider *Collider) *Entity {
+func NewEntity(position [3]float32, rotation [2]float32, velocity [3]float32, width float32, height float32) *Entity {
 	entity := &Entity{
 		position: position,
 		rotation: rotation,
 		velocity: velocity,
 		width:    width,
 		height:   height,
-		collider: collider,
+		collider: &Collider{},
 	}
 
 	return entity
@@ -39,32 +39,30 @@ func NewPotentialCollision(entryTime float32, normal [3]float32) *PotentialColli
 	}
 }
 
-func (entity *Entity) Update(Model []Model) {
+func (entity *Entity) Update(models []*Model) {
 	entity.position[0] += entity.velocity[0]
 	entity.position[1] += entity.velocity[1]
 	entity.position[2] += entity.velocity[2]
 
-	entity.UpdateCollider(Model)
+	entity.UpdateCollider(models)
 }
 
-func (entity *Entity) UpdateCollider(Model []Model) {
+func (entity *Entity) UpdateCollider(models []*Model) {
 	x, y, z := entity.position[0], entity.position[1], entity.position[2]
 
 	entity.collider.position1 = [3]float32{x - entity.width/2, y - entity.height/2, z - entity.width/2}
 	entity.collider.position2 = [3]float32{x + entity.width/2, y + entity.height/2, z + entity.width/2}
 
-	entity.CheckCollisions(Model)
+	entity.CheckCollisions(models)
 }
 
-func (entity *Entity) CheckCollisions(Model *Model) {
-	for _, collider := range Model.colliders {
-		for _, other := range Model.colliders {
-			if collider != other {
-				collided, normals := collider.Collide(other, entity.velocity)
-				if collided == 1 {
-					potentialCollision := NewPotentialCollision(collided, normals)
-					entity.potentialCollisions = append(entity.potentialCollisions, *potentialCollision)
-				}
+func (entity *Entity) CheckCollisions(models []*Model) {
+	for _, model := range models {
+		for _, collider := range model.colliders {
+			collided, normals := collider.Collide(entity.collider, entity.velocity)
+			if collided == 1 {
+				potentialCollision := NewPotentialCollision(collided, normals)
+				entity.potentialCollisions = append(entity.potentialCollisions, *potentialCollision)
 			}
 		}
 	}
@@ -89,6 +87,8 @@ func (entity *Entity) GetFirstCollision() {
 		entity.velocity[2] = 0
 	}
 }
+
+// 8===================================================================================================D
 
 func GetMinPenetrationTime(potentialCollisions []PotentialCollision) (float32, [3]float32) {
 	minTime := float32(math.MaxFloat32)

@@ -8,14 +8,12 @@ import (
 )
 
 type Player struct {
+	Entity
 	state *State
 
 	p *Mat
 	m *Mat
 	v *Mat
-
-	position [3]float32
-	rotation [2]float32
 
 	mvp_buf *wgpu.Buffer
 }
@@ -30,15 +28,19 @@ func NewPlayer(state *State) (*Player, error) {
 		return nil, err
 	}
 
+	// Create collider
+
+	position := [3]float32{0, 1, 0}
+	rotation := [2]float32{math.Pi / 2, 0}
+	velocity := [3]float32{0, 0, 0}
+
 	return &Player{
-		state: state,
+		Entity: *NewEntity(position, rotation, velocity, 0.5, 1.72),
+		state:  state,
 
 		p: NewMat().Identity(),
 		m: NewMat().Identity(),
 		v: NewMat().Identity(),
-
-		position: [3]float32{0, 1, 0},
-		rotation: [2]float32{math.Pi / 2, 0},
 
 		mvp_buf: mvp_buf,
 	}, nil
@@ -119,6 +121,8 @@ func (player *Player) Update() {
 
 	player.HandleInputs()
 	player.HandleMouse()
+
+	player.Entity.Update([]*Model{player.state.model}) // Fix: Pass a slice of Model instead of a single *Model
 
 	if player.state.win.GetKey(glfw.KeyEscape) == glfw.Press {
 		println("Escape pressed -> Close window")

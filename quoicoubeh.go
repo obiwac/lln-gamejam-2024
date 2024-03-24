@@ -255,9 +255,7 @@ func main() {
 	}
 	defer state.player.Release()
 
-	log.Println(coordinates_csv)
-
-	log.Println("Load model")
+	log.Println("Create model")
 
 	if state.model, err = NewModelFromIvx(&state, "Alexis room", alexis_room, alexis_room_lightmap); err != nil {
 		panic(err)
@@ -266,7 +264,7 @@ func main() {
 
 	log.Println("Create text")
 
-	if state.text, err = NewText(&state, "Quoi ? Coubeh.", 0, 0, 1, 1); err != nil {
+	if state.text, err = NewText(&state, "Quoicoubeh", 0, 0, 1, 1); err != nil {
 		panic(err)
 	}
 	defer state.text.Release()
