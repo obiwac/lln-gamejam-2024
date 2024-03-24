@@ -157,13 +157,13 @@ func (entity *Entity) Update(models []*Model) {
 
 		px, py, pz := entity.pos[0], entity.pos[1], entity.pos[2]
 
-		px /= M_TO_AYLIN
-		py /= M_TO_AYLIN
-		pz /= M_TO_AYLIN
-
 		px -= model.collider_off_x
 		py -= model.collider_off_y
 		pz -= model.collider_off_z
+
+		px /= M_TO_AYLIN
+		py /= M_TO_AYLIN
+		pz /= M_TO_AYLIN
 
 		x := int(float32(model.heightmap.res) * (px - model.heightmap.neg_x) / (model.heightmap.pos_x - model.heightmap.neg_x))
 		y := int(float32(model.heightmap.res) * (pz - model.heightmap.neg_z) / (model.heightmap.pos_z - model.heightmap.neg_z))
@@ -175,7 +175,7 @@ func (entity *Entity) Update(models []*Model) {
 		height := model.heightmap.heightmap[x][y]
 
 		if py < height {
-			entity.pos[1] = height / M_TO_AYLIN + model.collider_off_y
+			entity.pos[1] = height * M_TO_AYLIN + model.collider_off_y
 			entity.vel[1] = 0
 			entity.grounded = true
 		}

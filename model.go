@@ -106,6 +106,14 @@ func NewModel(state *State, label string, vertices []Vertex, indices []uint32, t
 
 			model.heightmap.heightmap[x][z] = vertex.pos[1]
 		}
+
+		for i := 0; i < model.heightmap.res; i++ {
+			for j := 0; j < model.heightmap.res; j++ {
+				if model.heightmap.heightmap[i][j] == 0 && i > 0 {
+					model.heightmap.heightmap[i][j] = model.heightmap.heightmap[i-1][j]
+				}
+			}
+		}
 	}
 
 	// vertex buffer shit
