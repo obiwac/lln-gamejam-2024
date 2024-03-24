@@ -13,7 +13,7 @@ import (
 
 type Texture struct {
 	texture *wgpu.Texture
-	View    *wgpu.TextureView
+	view    *wgpu.TextureView
 	sampler *wgpu.Sampler
 }
 
@@ -73,7 +73,7 @@ func NewTextureFromBytes(state *State, label string, buf []byte) (*Texture, erro
 		return nil, err
 	}
 
-	if texture.View, err = texture.texture.CreateView(nil); err != nil {
+	if texture.view, err = texture.texture.CreateView(nil); err != nil {
 		texture.texture.Release()
 		return nil, err
 	}
@@ -88,7 +88,7 @@ func NewTextureFromBytes(state *State, label string, buf []byte) (*Texture, erro
 		MaxAnisotrophy: 1,
 	}); err != nil {
 		texture.texture.Release()
-		texture.View.Release()
+		texture.view.Release()
 		return nil, err
 	}
 
@@ -121,7 +121,7 @@ func NewDepthTexture(state *State) (*Texture, error) {
 		return nil, err
 	}
 
-	if texture.View, err = texture.texture.CreateView(nil); err != nil {
+	if texture.view, err = texture.texture.CreateView(nil); err != nil {
 		texture.texture.Release()
 		return nil, err
 	}
@@ -139,7 +139,7 @@ func NewDepthTexture(state *State) (*Texture, error) {
 		LodMaxClamp:    100,
 	}); err != nil {
 		texture.texture.Release()
-		texture.View.Release()
+		texture.view.Release()
 		return nil, err
 	}
 
@@ -224,14 +224,14 @@ func NewTextureFromImage(state *State, label string, img image.Image) (*Texture,
 		return nil, err
 	}
 
-	if texture.View, err = texture.texture.CreateView(nil); err != nil {
+	if texture.view, err = texture.texture.CreateView(nil); err != nil {
 		texture.texture.Release()
 		return nil, err
 	}
 
 	if texture.sampler, err = state.device.CreateSampler(nil); err != nil {
 		texture.texture.Release()
-		texture.View.Release()
+		texture.view.Release()
 		return nil, err
 	}
 
@@ -240,6 +240,6 @@ func NewTextureFromImage(state *State, label string, img image.Image) (*Texture,
 
 func (texture *Texture) Release() {
 	texture.texture.Release()
-	texture.View.Release()
+	texture.view.Release()
 	texture.sampler.Release()
 }

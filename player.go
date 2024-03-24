@@ -17,7 +17,7 @@ type Player struct {
 	position [3]float32
 	rotation [2]float32
 
-	MvpBuf *wgpu.Buffer
+	mvp_buf *wgpu.Buffer
 }
 
 func NewPlayer(state *State) (*Player, error) {
@@ -40,7 +40,7 @@ func NewPlayer(state *State) (*Player, error) {
 		position: [3]float32{0, 1, 0},
 		rotation: [2]float32{math.Pi / 2, 0},
 
-		MvpBuf: mvp_buf,
+		mvp_buf: mvp_buf,
 	}, nil
 }
 
@@ -95,7 +95,7 @@ func (player *Player) HandleMouse() {
 }
 
 func (player *Player) Release() {
-	player.MvpBuf.Release()
+	player.mvp_buf.Release()
 }
 
 const M_TO_AYLIN = 1 / 1.64
@@ -114,9 +114,8 @@ func (player *Player) mvp() *Mat {
 }
 
 func (player *Player) Update() {
-
 	mvp := player.mvp()
-	player.state.queue.WriteBuffer(player.MvpBuf, 0, wgpu.ToBytes(mvp.Data[:]))
+	player.state.queue.WriteBuffer(player.mvp_buf, 0, wgpu.ToBytes(mvp.Data[:]))
 
 	player.HandleInputs()
 	player.HandleMouse()
