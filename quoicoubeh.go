@@ -28,7 +28,8 @@ type State struct {
 	model         *Model
 	text          *Text
 	player        *Player
-	delta_time    float64
+	prev_time	  float64
+	dt    float32
 
 	// pipelines
 
@@ -283,8 +284,8 @@ func main() {
 	for !state.win.ShouldClose() {
 		// Calculate delta time
 		current_time := glfw.GetTime()
-		state.delta_time = current_time - state.delta_time
-		state.delta_time = current_time
+		state.dt = float32(current_time - state.prev_time)
+		state.prev_time = current_time
 
 		glfw.PollEvents()
 		state.update()

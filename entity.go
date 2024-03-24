@@ -3,6 +3,7 @@ package main
 import "math"
 
 type Entity struct {
+	state *State
 	pos         [3]float32
 	rot         [2]float32
 	vel         [3]float32
@@ -24,8 +25,9 @@ var FRICTION = []float32{20, 20, 20}
 var DRAG_JUMP = []float32{1.8, 0, 1.8}
 var DRAG_FALL = []float32{1.8, .4, 1.8}
 
-func NewEntity(position [3]float32, rotation [2]float32, width float32, height float32) *Entity {
+func NewEntity(state *State, position [3]float32, rotation [2]float32, width float32, height float32) *Entity {
 	entity := &Entity{
+		state: 	  state,
 		pos:         position,
 		rot:         rotation,
 		vel:         [3]float32{0, 0, 0},
@@ -48,7 +50,7 @@ func NewPotentialCollision(entryTime float32, normal [3]float32) *PotentialColli
 }
 
 func (entity *Entity) Update(models []*Model) {
-	dt := float32(1. / 60)
+	dt := entity.state.dt
 
 	// compute friction/drag
 
