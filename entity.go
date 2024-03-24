@@ -175,7 +175,7 @@ func (entity *Entity) Update(models []*Model) {
 		height := model.heightmap.heightmap[x][y]
 
 		if py < height {
-			entity.pos[1] = height * M_TO_AYLIN + model.collider_off_y
+			entity.pos[1] = height*M_TO_AYLIN + model.collider_off_y
 			entity.vel[1] = 0
 			entity.grounded = true
 		}
@@ -233,7 +233,7 @@ func (entity *Entity) prossesTrigger(trigger string, state *State, collider *Col
 		state.alexis_room.door_opened = true
 		state.apat.ukulele_activated = true
 		collider.ignore = true
-	} else if trigger == "Col_Portail" && state.apat.ukulele_activated {
+	} else if trigger == "Col_Purple" && state.apat.ukulele_activated {
 		displayDialogue(getDialogues(), "nether1", state)
 	} else if trigger == "Col_Apat" {
 		displayDialogue(getDialogues(), "bonus", state)
