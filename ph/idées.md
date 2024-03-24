@@ -40,6 +40,7 @@ Dans ce monde, la gravité est inversée. Le joeur voit tout la scène à l'enve
 ### Monde inversion du temps
 
 ### Monde inversion des commandes
+! à la place de i
 
 ### Monde Obama
 Le monde Obama c'est juste un endroit avec des nuages et le triangle avec Obama qui monte et dessend. Il y a des dialogues qui expliquent qu'il suffi déchanger les étiquettes chaud et froid pour que  ça ne soit plus inversé.
