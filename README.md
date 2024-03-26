@@ -2,6 +2,60 @@
 
 Entry for the 2024 edition of the [Louvain-li-Nux gamejam](https://louvainlinux.org/activites/game-jam).
 Written in Go with custom WebGPU engine using the [`go-webgpu` bindings](https://github.com/rajveermalviya/go-webgpu), and (unfortunately) GLFW for windowing.
+A custom physics and collision engine was also built.
+
+Main lessons learned:
+
+- Don't trust ChatGPT to write your matrix math.
+- GLFW sucks (but we knew that already).
+- Go is basically the perfect language for a gamejam.
+- Debugging your graphics drivers is not an efficient use of your time during a gamejam.
+- Quoicoubeh.
+
+## Story
+
+The theme for this gamejam was "Portals, inverted".
+
+Alexis, who you play as, wakes up to a beautiful sunny morning in his room, ready to do his "Quoicouprière":
+
+![Alexis' actual room.](eyecandy/alexis-room.png)
+
+However, he ate too much garlic pasta the day before and deems it disrespectful to pray to the "Quoicoudieu" with an unclean mouth.
+
+He thus goes on to his sink to brush his teeth but realizes his roommates have played a devious prank on him. They have reversed the hot and cold water! Furious, he decides to go to the "apatrimoine" to get his plumbing tools:
+
+![Alexis' angrily staring himself in the mirror.](eyecandy/alexis-mirror.png)
+
+To his surprise, as he opens his door to exit his room, he sees through to another dimension!
+
+![Alexis looking through his door, to another dimension.](eyecandy/alexis-door.png)
+
+He steps through as the world begins to turn upside down. He is put face to face with the "Apatien", the guardian of the apatrimoine, as well as an unlit Nether portal:
+
+![Alexis, face-to-face with the Apatien.](eyecandy/apatien.png)
+
+He greets the Apatien and asks him for a screwdriver, but the Apatien first wants him to play him a serenade, before lighting the Nether portal and shifting the world back to normal.
+
+Stumped and disorientated, Alexis walks around the new dimension in order to find something he can play to the Apatien.
+Luckily, he stumbles upon a ukulele:
+
+![Ukulele.](eyecandy/ukulele.png)
+
+Playing this ukulele flips the world back the right side up and lights the Nether portal:
+
+![Lit Nether portal.](eyecandy/portal.png)
+
+Upon stepping through this portal, Alexis is put in front of his worst nightmare, unable to move:
+
+![Alexis worst nightmare.](eyecandy/obama.png)
+
+Indeed, it is the Obama triangle!
+During [a previous gamejam](https://github.com/obiwac/lln-gamejam-2023), Alexis only managed to create a triangle textured with a portrait of Obama.
+Since then, he has been haunted by this image.
+The only thing that scares Alexis more than the Obama triangle is bloom, which luckily we didn't have time to implement this time.
+
+Obama explains to him that only the hot/cold stickers on the tap were switched around, not the actual plumbing, so he didn't even have to go get his plumbing tools in the apatrimoine in the first place.
+Unfortunately, Alexis is still immobile, and will have to spend the rest of eternity stuck with the Obama triangle.
 
 ## Building
 
